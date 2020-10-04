@@ -1,11 +1,11 @@
-/* File              : test.ino
-   Codeing By IOXhop : www.ioxhop.com
-   Sonthaya Nongnuch : www.fb.me/maxthai */
+/* Only command Pin13 from server */
 
 #include<IOXhop_BC95.h>
 
 IOXhop_BC95 nb;
 Socket *soc = NULL;
+int relay =13;
+char c = '0';
 
 unsigned long timeSend = 0, timeSend2 = 0;
 
@@ -28,8 +28,16 @@ void setup() {
     char message[len + 1];
     memcpy(message, data, len);
     message[len] = 0;
-    Serial.print("Receiver[" + ip + ":" + String(port) + "]: ");
+    Serial.print("Receiver[" + ip + ":" + String(port) + ": " + String(len) + "]:");
     Serial.println(message);
+    if (len>0){
+      digitalWrite(relay, HIGH);
+      Serial.println("relay turned on!");  
+    }
+    if (len==0){
+      digitalWrite(relay, LOW);
+      Serial.println("relay turned off!");
+    }
   });
 }
 
@@ -44,8 +52,8 @@ void loop() {
       } else {
         Serial.println("fail !");
       }
+      
     }
   }
-  
   nb.loop();
 }
