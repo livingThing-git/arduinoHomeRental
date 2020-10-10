@@ -6,6 +6,7 @@
 IOXhop_BC95 nb;
 Socket *soc = NULL;
 int relay =13;
+int inPin = 7;
 char c = '0';
 /* Use software serial for the PZEM
  * Pin 11 Rx (Connects to the Tx pin on the PZEM)
@@ -35,11 +36,14 @@ void setup() {
     Serial.println(message);
     if (strcmp(message,"1")==0){      
       c = '1';
-    }else {      
+    }else if(strcmp(message,"0")==0) {      
       c = '0';
+    }else {
+      c = '2';
     }
   });
   pinMode(relay,OUTPUT);
+  pinMode(inPin, INPUT);
 }
 
 void loop() {
@@ -48,9 +52,8 @@ void loop() {
       timeSend = millis();
       char text[100] = "Hello, ";
       int state = 0;
-      if(digitalRead(relay)==LOW){
-        Serial.print("status: Low\n");
-        //strcpy(text, "is off.");
+      if(digitalRead(inPin)==LOW){
+        Serial.print("status: Low\n");        
         state = 0;
         if(c=='1'){
           digitalWrite(relay, HIGH);
@@ -67,9 +70,8 @@ void loop() {
           state = 0;
         }        
       }
-      if(digitalRead(relay)==HIGH){
+      if(digitalRead(inPin)==HIGH){
         Serial.print("status: High\n");
-//        strcpy(text, "is on.");
         state = 1;
         if(c=='1'){
           digitalWrite(relay, HIGH);
@@ -86,54 +88,29 @@ void loop() {
           state = 0;
         }                
       }
-      
-      char voltageStr[6];
-      float voltage = pzem.voltage();
-      sprintf(voltageStr, "%f", voltage);
-      char voltageComma[7] = ",";
-      strcat(voltageComma,voltageStr);
 
-      char currentStr[6];
-      float current = pzem.current();
-      sprintf(currentStr, "%f", current);
-      char currentComma[7] = ",";
-      strcat(currentComma, currentStr);
-
-      char powerStr[6];
-      float power = pzem.power();
-      sprintf(powerStr, "%f", power);
-      char powerComma[7] = ",";
-      strcat(powerComma, powerStr);
-
-      char energyStr[6];
-      float energy = pzem.energy();
-      sprintf(energyStr, "%f", energy);
-      char energyComma[7] = ",";
-      strcat(energyComma, energyStr);
-
-      char frequencyStr[6];
+      if(c=='2'){
+        pzem.resetEnergy();
+        c  = 'b';
+      }
+            
+      float voltage = pzem.voltage();      
+      float current = pzem.current();      
+      float power = pzem.power();            
+      float energy = pzem.energy();           
       float frequency = pzem.frequency();
-      sprintf(frequencyStr, "%f", frequency);
-      char frequencyComma[7] = ",";
-      strcat(frequencyComma, frequencyStr);
-
-      char pfStr[6];
       float pf = pzem.pf();
-      sprintf(pfStr, "%f", pf);
-      char pfComma[7] = ",";
-      strcat(pfComma, pfStr);
+      String relay = "off";
+      if(state==1){
+        relay = "on";
+      }
+      String deviceData = String(String(voltage) + "," + String(current) + "," +
+      String(power) + "," + String(energy) + "," + String(frequency) + "," + String(pf) + "," + String(relay));
+      strcat(text, deviceData.c_str());
+      Serial.print("text: ");
+      Serial.println(text);
 
-      strcat(text, voltageComma);
-      strcat(text, currentComma);
-      strcat(text, powerComma);
-      strcat(text, energyComma);
-      strcat(text, frequencyComma);
-      strcat(text, pfComma);
-      if(state==0)
-        strcat(text, "on");
-      else
-        strcat(text, "off"); 
-                    
+                               
       Serial.print("Send ");
       if (soc->send("34.126.80.253", 9765, text, strlen(text))) {
         Serial.println("OK");
