@@ -5,6 +5,7 @@
 IOXhop_BC95 nb;
 Socket *soc = NULL;
 int relay =13;
+int inPin = 7;
 char c = '0';
 
 unsigned long timeSend = 0, timeSend2 = 0;
@@ -34,6 +35,7 @@ void setup() {
     }
   });
   pinMode(relay,OUTPUT);
+  pinMode(inPin, INPUT);
 }
 
 void loop() {
@@ -41,21 +43,7 @@ void loop() {
     if ((millis() - timeSend) >= 5000) { // every 5 sec
       timeSend = millis();
       char text[100] = "Hello, NB-IoT !";
-//      if (c=='1'){
-//        if(digitalRead(relay)==LOW){
-//          digitalWrite(relay, HIGH);
-//          Serial.println("relay turned on!");            
-//        }  
-//        strcpy(text, "is on.");
-//      }        
-//      else{
-//        if(digitalRead(relay)==HIGH){
-//          digitalWrite(relay, LOW);
-//          Serial.println("relay turned off!");            
-//        }
-//        strcpy(text, "is off.");
-//      }
-      if(digitalRead(relay)==LOW){
+      if(digitalRead(inPin)==LOW){
         Serial.print("status: Low\n");
         strcpy(text, "is off.");
         if(c=='1'){
@@ -71,7 +59,7 @@ void loop() {
           c = 'b';
         }        
       }
-      if(digitalRead(relay)==HIGH){
+      if(digitalRead(inPin)==HIGH){
         Serial.print("status: High\n");
         strcpy(text, "is on.");
         if(c=='1'){
