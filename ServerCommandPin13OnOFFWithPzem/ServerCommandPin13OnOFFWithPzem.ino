@@ -5,6 +5,7 @@
 
 IOXhop_BC95 nb;
 Socket *soc = NULL;
+String simIMEI;
 int relay =13;
 int inPin = 7;
 char c = '0';
@@ -28,6 +29,7 @@ void setup() {
   } else {
     Serial.println("Create fail !");
   }
+  simIMEI = nb.getIMEI();
   soc->onReceiver([](String ip, unsigned long port, byte* data, int len) {
     char message[len + 1];
     memcpy(message, data, len);
@@ -50,7 +52,7 @@ void loop() {
   if (soc) {
     if ((millis() - timeSend) >= 5000) { // every 5 sec
       timeSend = millis();
-      char text[100] = "Hello, ";
+      String text = simIMEI;
       int state = 0;
       if(digitalRead(inPin)==LOW){
         Serial.print("status: Low\n");        
@@ -104,15 +106,15 @@ void loop() {
       if(state==1){
         relay = "on";
       }
-      String deviceData = String(String(voltage) + "," + String(current) + "," +
+      String deviceData = (text+","+String(voltage) + "," + String(current) + "," +
       String(power) + "," + String(energy) + "," + String(frequency) + "," + String(pf) + "," + String(relay));
-      strcat(text, deviceData.c_str());
-      Serial.print("text: ");
-      Serial.println(text);
+      
+      Serial.print("deviceData: ");
+      Serial.println(deviceData);
 
                                
       Serial.print("Send ");
-      if (soc->send("34.126.80.253", 9765, text, strlen(text))) {
+      if (soc->send("34.126.80.253", 9765, deviceData.c_str(), strlen(deviceData.c_str()))) {
         Serial.println("OK");
       } else {
         Serial.println("fail !");
