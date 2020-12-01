@@ -91,7 +91,7 @@ function get_msg_payload_insert_Str(emi_id, voltage, current, power, energy, fre
         freq + "," +
         pf + "," +
         ((state == 'off') ? false : true) + ",\'" +
-        ip_addr + "\', NOW())";
+        ip_addr + "\', TIMESTAMPADD(HOUR,7,NOW()))";
     console.log(insert_str)
     return insert_str;
 }
