@@ -24,7 +24,7 @@ void setup() {
   nb.easySetup(true);
   // Socket
   Serial.println("Create new socket");
-  if (soc = nb.CreateUDPSocket(9765)) {
+  if (soc = nb.CreateUDPSocket(9766)) {
     Serial.print("Socket id is ");
     Serial.println(soc->getID());
   } else {
@@ -124,7 +124,7 @@ void loop() {
 
                                
       Serial.print("Send ");
-      if (soc->send("34.126.80.253", 9765, deviceData.c_str(), strlen(deviceData.c_str()))) {
+      if (soc->send("34.126.80.253", 9766, deviceData.c_str(), strlen(deviceData.c_str()))) {
         Serial.println("OK");
       } else {
         Serial.println("fail !");

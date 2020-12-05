@@ -42,14 +42,14 @@ server.on('message', function(msg, info) {
     });
     //});
     //sending msg
-    server.send(msg, info.port, 'localhost', function(error) {
-        if (error) {
-            client.close();
-        } else {
-            console.log('Data sent !!!');
-        }
+    // server.send(msg, info.port, 'localhost', function(error) {
+    //     if (error) {
+    //         client.close();
+    //     } else {
+    //         console.log('Data sent !!!');
+    //     }
 
-    });
+    // });
     var write_success_msg = '10'
     server.send(write_success_msg, info.port, info.address, function(error) {
         if (error) {
