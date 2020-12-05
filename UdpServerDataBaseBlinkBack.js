@@ -37,28 +37,30 @@ server.on('message', function(msg, info) {
     //con.connect(function(err) {
     // if (err) throw err;
     con.query(write_msg_payload_str, function(err, result, fields) {
-        if (err) console.log(err.toString());
+        if (err){ console.log(err.toString());
+        }else{
+            var write_success_msg = '10'
+            server.send(write_success_msg, info.port, info.address, function(error) {
+            if (error) {
+                client.close();
+            } else {
+                console.log('Notification sent !!!');
+            }
+
+            });
+        }
         console.log(result);
     });
-    //});
-    //sending msg
-    // server.send(msg, info.port, 'localhost', function(error) {
-    //     if (error) {
-    //         client.close();
-    //     } else {
-    //         console.log('Data sent !!!');
-    //     }
 
-    // });
-    var write_success_msg = '10'
-    server.send(write_success_msg, info.port, info.address, function(error) {
+    // sending msg
+    server.send(msg, info.port, 'localhost', function(error) {
         if (error) {
             client.close();
         } else {
-            console.log('Notification sent !!!');
+            console.log('Data sent !!!');
         }
 
-    });
+    });    
 
 });
 
@@ -93,12 +95,12 @@ function get_msg_payload_insert_Str(emi_id, voltage, current, power, energy, fre
     var current_time_stamp = get_current_time_stamp()
     console.log('current time: ' + current_time_stamp)
     var insert_str = "INSERT INTO msg_payload VALUES(\'" + emi_id + "\', " +
-        voltage + "," +
-        current + "," +
-        power + "," +
-        energy + "," +
-        freq + "," +
-        pf + "," +
+        validate_value(voltage) + "," +
+        validate_value(current) + "," +
+        validate_value(power) + "," +
+        validate_value(energy) + "," +
+        validate_value(freq) + "," +
+        validate_value(pf) + "," +
         ((state == 'off') ? false : true) + ",\'" +
         ip_addr + "\', TIMESTAMPADD(HOUR,7,NOW()))";
     console.log(insert_str)
@@ -108,4 +110,11 @@ function get_msg_payload_insert_Str(emi_id, voltage, current, power, energy, fre
 function get_current_time_stamp() {
     var d = new Date();
     return d.getFullYear() + "" + (d.getMonth() + 1) + "" + d.getDate() + " " + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds();
+}
+
+function validate_value(electric_param_value) {
+    if(isNaN(parseFloat(electric_param_value)))
+        return "-1.0";
+    else
+        return  electric_param_value;
 }
