@@ -6,7 +6,7 @@
 IOXhop_BC95 nb;
 Socket *soc = NULL;
 String simIMEI;
-int relay =13;
+int relay =10;
 int inPin = 7;
 int dbPin = 6;
 char c = '0';
