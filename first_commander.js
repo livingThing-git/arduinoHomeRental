@@ -3,6 +3,9 @@ var args = process.argv.slice(2);
 var arduino_command = args[0];
 var arduino_ip = args[1];
 var arduino_port = args[2];
+console.log('arduino command: ' + arduino_command);
+console.log('arduino ip: ' + arduino_ip);
+console.log('arduino port: ' + arduino_port);
 // --------------------create udp --------------------
 var udp = require('dgram');
 
@@ -43,6 +46,15 @@ server.on('listening',function(){
   console.log('Server is listening at port' + port);
   console.log('Server ip :' + ipaddr);
   console.log('Server is IP4/IP6 : ' + family);
+    //sending msg
+  server.send(arduino_command,arduino_port,arduino_ip,function(error){
+    if(error){
+      client.close();
+    }else{
+      console.log('Data sent !!!' + ' to ' + arduino_ip + ' at ' + arduino_port + ' with msg: ' + arduino_command);
+    }
+
+  });
 });
 
 //emits after the socket is closed using socket.close();
@@ -50,7 +62,7 @@ server.on('close',function(){
   console.log('Socket is closed !');
 });
 
-server.bind(2222);
+server.bind(arduino_port);
 
 setTimeout(function(){
 server.close();
