@@ -37,15 +37,16 @@ void setup() {
     char message[len + 1];
     memcpy(message, data, len);
     message[len] = 0;
+    
     //Serial.print("Receiver[" + ip + ":" + String(port) + ": " + String(len) + "]:");
-    Serial.println(message);
-    if (strcmp(message,"1")==0 && strcmp(ip,control_server_ip)==0){      
+//    Serial.println(message);
+    if (strcmp(message,"1")==0 && strcmp(ip.c_str(),control_server_ip.c_str())==0){      
       c = '1';
-    }else if(strcmp(message,"0")==0 && strcmp(ip, control_server_ip)==0) {      
+    }else if(strcmp(message,"0")==0 && strcmp(ip.c_str(), control_server_ip.c_str())==0) {      
       c = '0';
     }else if(strcmp(message,"10")==0) {      
       c = '3';
-    }else if(strcmp(message,"-1")==0 && strcmp(ip, control_server_ip)==0) {
+    }else if(strcmp(message,"-1")==0 && strcmp(ip.c_str(), control_server_ip.c_str())==0) {
       c = '2';
     }
   });
@@ -122,8 +123,8 @@ void loop() {
       String deviceData = (text+","+String(voltage) + "," + String(current) + "," +
       String(power) + "," + String(energy) + "," + String(frequency) + "," + String(pf) + "," + String(relay));
       
-      Serial.print("deviceData: ");
-      Serial.println(deviceData);
+//      Serial.print("deviceData: ");
+//      Serial.println(deviceData);
 
                                
       Serial.print("Send ");
