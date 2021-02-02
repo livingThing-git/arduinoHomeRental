@@ -38,8 +38,8 @@ void setup() {
     memcpy(message, data, len);
     message[len] = 0;
     
-    //Serial.print("Receiver[" + ip + ":" + String(port) + ": " + String(len) + "]:");
-//    Serial.println(message);
+    Serial.print("Receiver[" + ip + ":" + String(port) + ": " + String(len) + "]:");
+    Serial.println(message);
     if (strcmp(message,"1")==0 && strcmp(ip.c_str(),control_server_ip.c_str())==0){      
       c = '1';
     }else if(strcmp(message,"0")==0 && strcmp(ip.c_str(), control_server_ip.c_str())==0) {      
