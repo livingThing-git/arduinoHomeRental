@@ -8,6 +8,12 @@
     |     27 reset      |
 */
 #include "AIS_SIM7020E_API.h"
+#include <PZEM004Tv30.h>
+#include <HardwareSerial.h>
+PZEM004Tv30 pzem(3, 1);
+
+//HardwareSerial Serial1(0); //use hwserial UART2 at pin IO16(RX2) and IO17(TX2)
+//PZEM004Tv30 pzem(&Serial1);
 String address    = "35.240.140.227";               //Your IPaddress or mqtt server url
 String serverPort = "1883";               //Your server port
 String clientID   = "";               //Your client id < 120 characters

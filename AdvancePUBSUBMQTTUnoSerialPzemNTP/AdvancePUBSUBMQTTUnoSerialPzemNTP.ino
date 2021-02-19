@@ -1,3 +1,4 @@
+#include <SoftwareSerial.h>
 /*
  Supported DEVIO NB-DEVKIT I Board 
     |  Do not use PIN   |
@@ -8,6 +9,7 @@
     |     27 reset      |
 */
 #include "AIS_SIM7020E_API.h"
+#include <NTPClient.h>
 String address    = "35.240.140.227";               //Your IPaddress or mqtt server url
 String serverPort = "1883";               //Your server port
 String clientID   = "";               //Your client id < 120 characters
@@ -26,7 +28,7 @@ unsigned int will_retain  = 1;
 unsigned int pubRetained  = 1;
 unsigned int pubDuplicate = 0;
  
-const long interval = 5000;           //time in millisecond 
+const long interval = 1000;           //time in millisecond 
 unsigned long previousMillis = 0;
 
 AIS_SIM7020E_API nb;
@@ -38,27 +40,51 @@ AIS_SIM7020E_API nb;
    *  will_msg   : String */
 String willOption = nb.willConfig("will_topic",will_qos,will_retain,"will_msg");
 int cnt = 0;
-
+SoftwareSerial NodeSerial(12, 14); // RX | TX
 void setup() {
+  pinMode(12, INPUT);
+  pinMode(14, OUTPUT);
   Serial.begin(115200);
+  NodeSerial.begin(57600);
   nb.begin();
   clientID = nb.getIMSI();
   topic = topic + clientID;
   setupMQTT();
-  nb.setCallback(callback); 
-  previousMillis = millis();                
+  nb.setCallback(callback);
+  previousMillis = millis();
 }
-void loop() {   
+
+String get_payload(float voltage, 
+                   float energy
+                   ) {
+                   return "{\"voltage\":" + String(voltage) + "," +                                                        
+                            "\"energy\":" + String(energy)       +                                                                                                      
+                            "}"  ;
+                   }
+
+void loop() {
   nb.MQTTresponse();
   unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis >= interval) {
-        cnt++;
+  if(currentMillis - previousMillis >= interval){
+    while (NodeSerial.available() > 0) {   
+      float voltage = NodeSerial.parseFloat();
+      float energy = NodeSerial.parseFloat();
+      if (NodeSerial.read() == '\n')
+      {
+        Serial.print("voltage: ");    
+        Serial.print(voltage); 
+        Serial.print("\tenergy: ");
+        Serial.println(energy);        
         connectStatus();
-        payload = "{\"imsi\":\"" + nb.getIMSI() + "\",\"message_index\":" + String(cnt) + "}";
+        payload = get_payload(voltage,                              
+                              energy);
         nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);      //QoS = 0, 1, or 2, retained = 0 or 1, dup = 0 or 1
-        previousMillis = currentMillis;  
+        previousMillis = currentMillis; 
+      }
+    }        
   }
 }
+
 
 //=========== MQTT Function ================
 void setupMQTT(){
@@ -73,6 +99,7 @@ void setupMQTT(){
     nb.subscribe(topic,subQoS);
 //    nb.unsubscribe(topic); 
 }
+
 void connectStatus(){
     if(!nb.MQTTstatus()){
         if(!nb.NBstatus()){
@@ -83,6 +110,7 @@ void connectStatus(){
        setupMQTT();
     }   
 }
+
 void callback(String &topic,String &payload, String &QoS,String &retained){
   Serial.println("-------------------------------");
   Serial.println("# Message from Topic \""+topic+"\" : "+nb.toString(payload));

@@ -1,5 +1,3 @@
-
-
 /*
  Supported DEVIO NB-DEVKIT I Board 
     |  Do not use PIN   |
@@ -10,36 +8,31 @@
     |     27 reset      |
 */
 #include "AIS_SIM7020E_API.h"
-
-//#include "AT_SIM7020E.h"
-//#include "Magellan_SIM7020E.h"
-//#include "board.h"
 String address    = "35.240.140.227";               //Your IPaddress or mqtt server url
 String serverPort = "1883";               //Your server port
-String clientID   = "pong";               //Your client id < 120 characters
+String clientID   = "";               //Your client id < 120 characters
 String topic      = "/ESP/";               //Your topic     < 128 characters
 String payload    = "HelloWorld!";    //Your payload   < 500 characters
-String username   = "livingthing_iot";          //username for mqtt server, username <= 100 characters
-String password   = "thegang617";  //password for mqtt server, password <= 100 characters 
+String username   = "";               //username for mqtt server, username <= 100 characters
+String password   = "";               //password for mqtt server, password <= 100 characters 
 unsigned int subQoS       = 0;
 unsigned int pubQoS       = 0;
 unsigned int pubRetained  = 0;
 unsigned int pubDuplicate = 0;
-
 
 const long interval = 5000;           //time in millisecond 
 unsigned long previousMillis = 0;
 int cnt = 0;
 
 AIS_SIM7020E_API nb;
-//AT_SIM7020E std_nb;
-void setup() { 
+void setup() {
   Serial.begin(115200);
-  nb.begin();  
+  clientID = clientID + nb.getIMSI();
+  topic = topic + clientID;
+  payload = payload + clientID;
+  nb.begin();
   setupMQTT();
-  nb.setCallback(callback);
-  topic = topic +nb.getIMEI();
-  Serial.print("Show topic: " + topic);   
+  nb.setCallback(callback);   
   previousMillis = millis();            
 }
 void loop() {   
