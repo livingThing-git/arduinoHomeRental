@@ -53,6 +53,11 @@ void setup() {
   previousMillis = millis();
 }
 
+String added_payload(String metric_name, float metric_value, bool is_end ){
+  String msg = (metric_value>0)? "\"" + metric_name + "\":" + String(metric_value) : "";
+  return (!is_end)? msg+",": msg;
+}
+
 String get_payload(float voltage, 
                    float current,
                    float power,
@@ -61,15 +66,16 @@ String get_payload(float voltage,
                    float pf,
                    String client_id,
                    int msg_index) {
-                   return "{\"voltage\":" + String(voltage) + "," +
-                            "\"current\":" + String(current) + "," +
-                            "\"power\":" + String(power) + "," +
-                            "\"energy\":" + String(energy) + "," +
-                            "\"frequency\":" + String(frequency) + "," + 
-                            "\"pf\":" + String(pf) + "," +
-                            "\"client_id\":\"" + client_id + "\"" + "," +
-                            "\"message_index\":" + String(msg_index) + 
-                            "}"  ;
+                    String msg = "{\"voltage\":" + String(voltage) + "," +
+                      added_payload("current", current,true) +
+                      added_payload("power", power,true) + 
+                      added_payload("energy", energy,true) + 
+                      added_payload("frequency", frequency,true) + 
+                      added_payload("pf", pf,true) + 
+                      "}"  ;
+                       
+                   return msg;
+                            
                    }
 
 void loop() {
