@@ -1,3 +1,5 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
 #include <SoftwareSerial.h>
 /*
  Supported DEVIO NB-DEVKIT I Board 
@@ -9,6 +11,8 @@
     |     27 reset      |
 */
 #include "AIS_SIM7020E_API.h"
+// Set the LCD address to 0x3F for a 16 chars and 2 line display
+LiquidCrystal_I2C lcd(0x3F, 16, 2);
 String address    = "35.240.140.227";               //Your IPaddress or mqtt server url
 String serverPort = "1883";               //Your server port
 String clientID   = "";               //Your client id < 120 characters
@@ -40,6 +44,7 @@ AIS_SIM7020E_API nb;
 String willOption = nb.willConfig("will_topic",will_qos,will_retain,"will_msg");
 int cnt = 0;
 SoftwareSerial NodeSerial(12, 14); // RX | TX
+String total_unit = "9977.0";
 void setup() {
   pinMode(12, INPUT);
   pinMode(14, OUTPUT);
@@ -51,6 +56,7 @@ void setup() {
   setupMQTT();
   nb.setCallback(callback);
   previousMillis = millis();
+  lcd.begin();
 }
 
 String added_payload(String metric_name, float metric_value, bool is_end ){
@@ -58,25 +64,13 @@ String added_payload(String metric_name, float metric_value, bool is_end ){
   return (!is_end)? msg+",": msg;
 }
 
-String get_payload(float voltage, 
-                   float current,
-                   float power,
-                   float energy,
-                   float frequency,
-                   float pf,
-                   String client_id,
-                   int msg_index) {
-                    String msg = "{\"voltage\":" + String(voltage) + "," +
-                      added_payload("current", current,true) +
-                      added_payload("power", power,true) + 
-                      added_payload("energy", energy,true) + 
-                      added_payload("frequency", frequency,true) + 
-                      added_payload("pf", pf,true) + 
-                      "}"  ;
-                       
-                   return msg;
-                            
-                   }
+String get_payload(float voltage,                    
+                   float energy) {
+   return "{" + 
+          added_payload("voltage",voltage, false) +
+          added_payload("energy", energy,true) +                       
+           "}"  ;                                                   
+ }
 
 void loop() {
   nb.MQTTresponse();
@@ -84,40 +78,32 @@ void loop() {
   if(currentMillis - previousMillis >= interval){
     while (NodeSerial.available() > 0) {   
       float voltage = NodeSerial.parseFloat();
-//      float current = NodeSerial.parseFloat();
-//      float power = NodeSerial.parseFloat();
       float energy = NodeSerial.parseFloat();
-//      float frequency = NodeSerial.parseFloat();
-//      float pf = NodeSerial.parseFloat(); 
       if (NodeSerial.read() == '\n')
       {
         Serial.print("voltage: ");    
         Serial.print(voltage); 
-//        Serial.print("\tcurrent: ");
-//        Serial.print(current);
-//        Serial.print("\tpower: ");
-//        Serial.print(power);
         Serial.print("\tenergy: ");
         Serial.println(energy);
-//        Serial.print("\tfrequency: ");
-//        Serial.print(frequency);
-//        Serial.print("\tpf: ");
-//        Serial.println(pf);
         cnt++;
         connectStatus();
-        payload = get_payload(voltage,
-                              0,
-                              0,
-                              energy,
-                              0,
-                              0,
-                              clientID,
-                              cnt);
-//          payload = "{\"energy\":" + String(energy) + "}";
+        payload = get_payload(voltage,energy);
         nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);      //QoS = 0, 1, or 2, retained = 0 or 1, dup = 0 or 1
-        previousMillis = currentMillis; 
+        previousMillis = currentMillis;
+        lcd.setCursor(0, 0);
+        lcd.print("net:");
+        lcd.setCursor( 5, 0);
+        lcd.print(total_unit);
+        lcd.setCursor(12, 0);
+        lcd.print("unit");
+        lcd.setCursor( 0, 1);
+        lcd.print("eng:");
+        lcd.setCursor( 5, 1);
+        lcd.print(energy);            
+        lcd.setCursor(12, 1);
+        lcd.print("unit");           
       }
-    }        
+    }
   }
 }
 
@@ -147,9 +133,10 @@ void connectStatus(){
     }   
 }
 
-void callback(String &topic,String &payload, String &QoS,String &retained){
+void callback(String &topic,String &comeback_text, String &QoS,String &retained){
   Serial.println("-------------------------------");
-  Serial.println("# Message from Topic \""+topic+"\" : "+nb.toString(payload));
+  Serial.println("# Message from Topic \""+topic+"\" : "+nb.toString(comeback_text));
+  total_unit = nb.toString(comeback_text);
   Serial.println("# QoS = "+QoS);
   if(retained.indexOf(F("1"))!=-1){
     Serial.println("# Retained = "+retained);

@@ -6,6 +6,7 @@
 */
 PZEM004Tv30 pzem(11, 12);
 SoftwareSerial UnoSerial(3,2); // RX | TX
+
 void setup() {
   // put your setup code here, to run once:
   pinMode(3, INPUT);
@@ -21,7 +22,7 @@ float get_measurement(float measurement){
 void loop() {
   // put your main code here, to run repeatedly:
   float voltage = get_measurement(pzem.voltage());
-  float energy = get_measurement(pzem.energy());
+  float energy = get_measurement(pzem.energy());  
   delay(500);
   UnoSerial.print(voltage);
   UnoSerial.print(" ");
