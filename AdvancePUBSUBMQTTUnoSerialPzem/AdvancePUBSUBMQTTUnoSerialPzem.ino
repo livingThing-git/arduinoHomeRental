@@ -13,6 +13,10 @@
 #include "AIS_SIM7020E_API.h"
 // Set the LCD address to 0x3F for a 16 chars and 2 line display
 LiquidCrystal_I2C lcd(0x3F, 16, 2);
+const String RESET = "reset";
+const String RELAY = "relay";
+const int PzemPin = 32;
+const int RelayPin = 15;
 String address    = "35.240.140.227";               //Your IPaddress or mqtt server url
 String serverPort = "1883";               //Your server port
 String clientID   = "";               //Your client id < 120 characters
@@ -45,9 +49,14 @@ String willOption = nb.willConfig("will_topic",will_qos,will_retain,"will_msg");
 int cnt = 0;
 SoftwareSerial NodeSerial(12, 14); // RX | TX
 String total_unit = "9977.0";
+bool is_reset_pzem = true;
+bool is_relay_on = true;
 void setup() {
+ 
   pinMode(12, INPUT);
   pinMode(14, OUTPUT);
+  pinMode(PzemPin, OUTPUT);
+  pinMode(RelayPin, OUTPUT);
   Serial.begin(115200);
   NodeSerial.begin(57600);
   nb.begin();
@@ -101,7 +110,10 @@ void loop() {
         lcd.setCursor( 5, 1);
         lcd.print(energy);            
         lcd.setCursor(12, 1);
-        lcd.print("unit");           
+        lcd.print("unit");
+        
+        
+        // nb.MQTTresponse();
       }
     }
   }
@@ -119,7 +131,7 @@ void setupMQTT(){
      Serial.println("\nconnectMQTT");
     }
     nb.subscribe(topic,subQoS);
-//    nb.unsubscribe(topic); 
+  //  nb.unsubscribe(topic); 
 }
 
 void connectStatus(){
@@ -133,10 +145,23 @@ void connectStatus(){
     }   
 }
 
-void callback(String &topic,String &comeback_text, String &QoS,String &retained){
+void callback(String &topic,String &callback_payload, String &QoS,String &retained){
   Serial.println("-------------------------------");
-  Serial.println("# Message from Topic \""+topic+"\" : "+nb.toString(comeback_text));
-  total_unit = nb.toString(comeback_text);
+  Serial.println("# Message from Topic \""+topic+"\" : "+nb.toString(callback_payload));
+  String callback_command = nb.toString(callback_payload);
+  is_reset_pzem = (callback_command==RESET) ? true : false;//just for demo
+  is_relay_on = (callback_command==RELAY) ? true : false;//just for demo
+  if(is_reset_pzem){
+    digitalWrite(PzemPin, HIGH);    
+  }else{
+    digitalWrite(PzemPin, LOW);
+  }
+  if(is_relay_on){
+    digitalWrite(RelayPin, HIGH);    
+  }else{
+    digitalWrite(RelayPin, LOW);
+  }
+  
   Serial.println("# QoS = "+QoS);
   if(retained.indexOf(F("1"))!=-1){
     Serial.println("# Retained = "+retained);
