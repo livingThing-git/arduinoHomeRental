@@ -34,7 +34,7 @@ unsigned int will_qos     = 1;
 unsigned int will_retain  = 1;
 unsigned int pubRetained  = 1;
 unsigned int pubDuplicate = 0;
-//test to change 20210315 10:33
+//test to change 20210315 10:51
 const long interval = 1000;           //time in millisecond 
 unsigned long previousMillis = 0;
 
