@@ -6,7 +6,7 @@
 */
 PZEM004Tv30 pzem(11, 12);
 SoftwareSerial UnoSerial(3,2); // RX | TX
-
+const int reset_energy_pin = 4;
 void setup() {
   // put your setup code here, to run once:
   pinMode(3, INPUT);
@@ -29,4 +29,6 @@ void loop() {
   UnoSerial.print(energy);
   UnoSerial.print("\n");
   delay(500);
+  if(digitalRead(reset_energy_pin)==HIGH)
+    pzem.resetEnergy();
 }

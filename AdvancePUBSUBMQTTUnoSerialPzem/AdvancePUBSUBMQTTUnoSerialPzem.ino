@@ -13,11 +13,10 @@
 #include "AIS_SIM7020E_API.h"
 // Set the LCD address to 0x3F for a 16 chars and 2 line display
 LiquidCrystal_I2C lcd(0x3F, 16, 2);
-const String RESET = "reset";
-const String RELAY = "relay";
+
 const int PzemPin = 32;
 const int RelayPin = 15;
-String address    = "35.240.140.227";               //Your IPaddress or mqtt server url
+String address    = "34.87.54.201";//"35.240.140.227";               //Your IPaddress or mqtt server url
 String serverPort = "1883";               //Your server port
 String clientID   = "";               //Your client id < 120 characters
 String topic      = "/ESP/";               //Your topic     < 128 characters
@@ -37,7 +36,7 @@ unsigned int pubDuplicate = 0;
 //test to change 20210315 10:51
 const long interval = 1000;           //time in millisecond 
 unsigned long previousMillis = 0;
-
+bool is_pzem_reset = false;
 AIS_SIM7020E_API nb;
   /*  This part is for setupAdvanceMQTT.
    *  parameter for will option (Last will and Testament)
@@ -49,8 +48,7 @@ String willOption = nb.willConfig("will_topic",will_qos,will_retain,"will_msg");
 int cnt = 0;
 SoftwareSerial NodeSerial(12, 14); // RX | TX
 String total_unit = "9977.0";
-bool is_reset_pzem = true;
-bool is_relay_on = true;
+
 void setup() {
  
   pinMode(12, INPUT);
@@ -69,7 +67,7 @@ void setup() {
 }
 
 String added_payload(String metric_name, float metric_value, bool is_end ){
-  String msg = (metric_value>0)? "\"" + metric_name + "\":" + String(metric_value) : "";
+  String msg = (metric_value>=0)? "\"" + metric_name + "\":" + String(metric_value) : "";
   return (!is_end)? msg+",": msg;
 }
 
@@ -94,7 +92,7 @@ void loop() {
         Serial.print(voltage); 
         Serial.print("\tenergy: ");
         Serial.println(energy);
-        cnt++;
+        
         connectStatus();
         payload = get_payload(voltage,energy);
         nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);      //QoS = 0, 1, or 2, retained = 0 or 1, dup = 0 or 1
@@ -111,6 +109,19 @@ void loop() {
         lcd.print(energy);            
         lcd.setCursor(12, 1);
         lcd.print("unit");
+        if(is_pzem_reset){
+          digitalWrite(PzemPin, HIGH);
+          cnt++;
+          Serial.print("cnt:");
+          Serial.println(cnt);
+          if(cnt>49){
+            Serial.print("cnt:");
+            Serial.println(cnt);
+            digitalWrite(PzemPin, LOW);
+            cnt = 0;
+            is_pzem_reset = false;
+          }
+        }
         
         
         // nb.MQTTresponse();
@@ -119,8 +130,8 @@ void loop() {
   }
 }
 
-
 //=========== MQTT Function ================
+
 void setupMQTT(){
   /*  parameter for setup advance MQTT
    *  version    : MQTT veresion 3(3.1), 4(3.1.1)
@@ -149,17 +160,24 @@ void callback(String &topic,String &callback_payload, String &QoS,String &retain
   Serial.println("-------------------------------");
   Serial.println("# Message from Topic \""+topic+"\" : "+nb.toString(callback_payload));
   String callback_command = nb.toString(callback_payload);
-  is_reset_pzem = (callback_command==RESET) ? true : false;//just for demo
-  is_relay_on = (callback_command==RELAY) ? true : false;//just for demo
-  if(is_reset_pzem){
-    digitalWrite(PzemPin, HIGH);    
-  }else{
-    digitalWrite(PzemPin, LOW);
-  }
-  if(is_relay_on){
-    digitalWrite(RelayPin, HIGH);    
-  }else{
-    digitalWrite(RelayPin, LOW);
+  char alpha_cmd  = callback_command[0];
+  switch(alpha_cmd){
+     case 'a'://reset pzem to high
+      is_pzem_reset = true;
+      digitalWrite(PzemPin, HIGH);
+      break;
+     case 'b'://reset pzem to low
+     is_pzem_reset = false;
+      digitalWrite(PzemPin, LOW);
+      break;
+     case 'c'://reset relay to high
+      digitalWrite(RelayPin,HIGH);
+      break;
+     case 'd'://reset relay to low
+      digitalWrite(RelayPin, LOW);
+      break;
+     default:
+     ;     
   }
   
   Serial.println("# QoS = "+QoS);
