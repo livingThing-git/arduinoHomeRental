@@ -160,6 +160,9 @@ void connectStatus(){
 void callback(String &topic,String &callback_payload, String &QoS,String &retained){
   Serial.println("-------------------------------");
   Serial.println("# Message from Topic \""+topic+"\" : "+nb.toString(callback_payload));
+  //pzem callback json =  {"command_type":"pzem","value":"a"} or {"command_type":"pzem","value":"b"}
+  //Relay callback json = {"command_type":"relay","value":"c"}or {"command_type":"relay","value":"d"}
+  //total_unit callback json = {"command_type":"total_unite","value":"xxxxx"}
   String callback_command = nb.toString(callback_payload);
   char alpha_cmd  = callback_command[0];
   switch(alpha_cmd){
