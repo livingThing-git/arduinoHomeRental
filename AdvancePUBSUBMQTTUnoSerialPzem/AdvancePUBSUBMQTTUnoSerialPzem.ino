@@ -47,7 +47,7 @@ AIS_SIM7020E_API nb;
 String willOption = nb.willConfig("will_topic",will_qos,will_retain,"will_msg");
 int cnt = 0;
 SoftwareSerial NodeSerial(12, 14); // RX | TX
-String total_unit = "9977.0";
+String total_unit = "InHandle";
 
 void setup() {
  
@@ -97,13 +97,14 @@ void loop() {
         payload = get_payload(voltage,energy);
         nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);      //QoS = 0, 1, or 2, retained = 0 or 1, dup = 0 or 1
         previousMillis = currentMillis;
-        lcd.setCursor(0, 0);
-        lcd.print("net:");
-        lcd.setCursor( 5, 0);
+//        lcd.setCursor(0, 0);
+//        lcd.print("net:");
+//        lcd.setCursor( 5, 0);      
+        lcd.setCursor( 4, 0);      
         //please change total_unit here after server code finish
         lcd.print(total_unit);
-        lcd.setCursor(12, 0);
-        lcd.print("unit");
+//        lcd.setCursor(12, 0);
+//        lcd.print("unit");
         lcd.setCursor( 0, 1);
         lcd.print("eng:");
         lcd.setCursor( 5, 1);
