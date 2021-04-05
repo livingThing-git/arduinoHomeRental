@@ -100,6 +100,7 @@ void loop() {
         lcd.setCursor(0, 0);
         lcd.print("net:");
         lcd.setCursor( 5, 0);
+        //please change total_unit here after server code finish
         lcd.print(total_unit);
         lcd.setCursor(12, 0);
         lcd.print("unit");
