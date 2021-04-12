@@ -77,7 +77,7 @@ String get_payload(float voltage,
    return "{" + 
           added_payload("voltage",voltage, false) +
           added_payload("energy", energy,false) +
-          added_payload("relay_status", relay_status,true) 
+          added_payload("relay_status", relay_status,true) +
            "}"  ;                                                   
  }
 
