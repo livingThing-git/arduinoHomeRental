@@ -95,8 +95,8 @@ void loop() {
         Serial.print(voltage); 
         Serial.print("\tenergy: ");
         Serial.println(energy);
-        Serial.println("\trelay_status: ");
-        Serial.println(relay_status);
+        Serial.print("\trelay_status: ");
+        Serial.println(String(relay_status));
         
         connectStatus();
         payload = get_payload(voltage,energy,relay_status);
