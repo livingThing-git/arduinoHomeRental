@@ -72,10 +72,12 @@ String added_payload(String metric_name, float metric_value, bool is_end ){
 }
 
 String get_payload(float voltage,                    
-                   float energy) {
+                   float energy,
+                   float relay_status) {
    return "{" + 
           added_payload("voltage",voltage, false) +
-          added_payload("energy", energy,true) +                       
+          added_payload("energy", energy,false) +
+          added_payload("relay_status", relay_status,true) 
            "}"  ;                                                   
  }
 
@@ -86,15 +88,18 @@ void loop() {
     while (NodeSerial.available() > 0) {   
       float voltage = NodeSerial.parseFloat();
       float energy = NodeSerial.parseFloat();
+      int relay_status = digitalRead(RelayPin);
       if (NodeSerial.read() == '\n')
       {
         Serial.print("voltage: ");    
         Serial.print(voltage); 
         Serial.print("\tenergy: ");
         Serial.println(energy);
+        Serial.println("\trelay_status: ");
+        Serial.println(relay_status);
         
         connectStatus();
-        payload = get_payload(voltage,energy);
+        payload = get_payload(voltage,energy,relay_status);
         nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);      //QoS = 0, 1, or 2, retained = 0 or 1, dup = 0 or 1
         previousMillis = currentMillis;
 //        lcd.setCursor(0, 0);
@@ -163,7 +168,7 @@ void callback(String &topic,String &callback_payload, String &QoS,String &retain
   Serial.println("# Message from Topic \""+topic+"\" : "+nb.toString(callback_payload));
   //pzem callback json =  {"command_type":"pzem","value":"a"} or {"command_type":"pzem","value":"b"}
   //Relay callback json = {"command_type":"relay","value":"c"}or {"command_type":"relay","value":"d"}
-  //total_unit callback json = {"command_type":"total_unite","value":"xxxxx"}
+  //total_unit callback json = {"command_type":"total_unit","value":"xxxxx"}
   String callback_command = nb.toString(callback_payload);
   char alpha_cmd  = callback_command[0];
   switch(alpha_cmd){
