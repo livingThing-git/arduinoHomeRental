@@ -40,11 +40,15 @@ class Mqtt_db:
             is_table_exist = self.check_table_exists(con, self.table_name)
             # insert into table
             if is_table_exist:
-                sql = f"INSERT INTO {self.database}.{self.table_name} (imsi,voltage,energy,relay,time_stamp) VALUES (%s,%s,%s,%s,%s)"
-                insert_value = (msg_topic.replace(self.base_topic,""),str(voltage),str(energy),int(relay_status),str(dt_string))
-                cursor.execute(sql,insert_value)
-                con.commit()
-                print("1 record, inserted, ID:", cursor.lastrowid)
+                try:
+                    sql = f"INSERT INTO {self.database}.{self.table_name} (imsi,voltage,energy,relay,time_stamp) VALUES (%s,%s,%s,%s,%s)"
+                    insert_value = (msg_topic.replace(self.base_topic,""),str(voltage),str(energy),int(relay_status),str(dt_string))
+                    cursor.execute(sql,insert_value)
+                    con.commit()
+                    print("1 record, inserted, ID:", cursor.lastrowid)
+                except Exception as e:
+                    print(e)
+                
         else:
             print(f"cannot connect to database: {self.database}")
         con.close()        
