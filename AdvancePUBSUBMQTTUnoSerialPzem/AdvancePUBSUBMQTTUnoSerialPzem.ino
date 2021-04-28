@@ -16,7 +16,7 @@ LiquidCrystal_I2C lcd(0x3F, 16, 2);
 
 const int PzemPin = 32;
 const int RelayPin = 15;
-String address    = "34.185.180.247";               //Your IPaddress or mqtt server url
+String address    = "35.185.180.247";               //Your IPaddress or mqtt server url
 String serverPort = "1883";               //Your server port
 String clientID   = "";               //Your client id < 120 characters
 String topic      = "/ESP/";               //Your topic     < 128 characters
