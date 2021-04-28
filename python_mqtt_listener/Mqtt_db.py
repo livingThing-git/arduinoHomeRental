@@ -17,7 +17,7 @@ class Mqtt_db:
     def save_to_table(self,msg_topic, msg_payload):
         print(f'show:"topic:"{msg_topic},"payload"{msg_payload}' )    
         # datetime object containing current date and time
-        now = datetime.now()
+        now = datetime.now() + timedelta(hours=7)
         
         print("now =", now)
 
