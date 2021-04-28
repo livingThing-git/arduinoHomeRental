@@ -18,7 +18,7 @@ if __name__ == '__main__':
     client = mqtt.Client()    
     client.on_connect = on_connect
     client.on_message = on_message
-    client.connect("34.87.54.201", 1883, 60)
+    client.connect("35.185.180.247", 1883, 60)
     # Blocking call that processes network traffic, dispatches callbacks and
     # handles reconnecting.
     # Other loop*() functions are available that give a threaded interface and a
