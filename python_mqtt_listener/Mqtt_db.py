@@ -2,7 +2,7 @@ import table_definition
 import json
 from mysql.connector import errorcode
 import mysql.connector
-from datetime import datetime
+from datetime import datetime, timedelta
 # GRANT ALL PRIVILEGES ON database_name.* TO 'username'@'localhost';
 # https://chartio.com/resources/tutorials/how-to-grant-all-privileges-on-a-database-in-mysql/
 class Mqtt_db:
