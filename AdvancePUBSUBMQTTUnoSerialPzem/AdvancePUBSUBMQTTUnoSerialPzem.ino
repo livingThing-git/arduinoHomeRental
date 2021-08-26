@@ -91,17 +91,17 @@ void loop() {
       int relay_status = digitalRead(RelayPin);
       if (NodeSerial.read() == '\n')
       {
+        previousMillis = currentMillis;
+        connectStatus();        
         Serial.print("voltage: ");    
         Serial.print(voltage); 
         Serial.print("\tenergy: ");
         Serial.println(energy);
         Serial.print("\trelay_status: ");
         Serial.println(String(relay_status));
-        
-        connectStatus();
+                
         payload = get_payload(voltage,energy,relay_status);
-        nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);      //QoS = 0, 1, or 2, retained = 0 or 1, dup = 0 or 1
-        previousMillis = currentMillis;
+        nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);      //QoS = 0, 1, or 2, retained = 0 or 1, dup = 0 or 1        
 //        lcd.setCursor(0, 0);
 //        lcd.print("net:");
 //        lcd.setCursor( 5, 0);      
