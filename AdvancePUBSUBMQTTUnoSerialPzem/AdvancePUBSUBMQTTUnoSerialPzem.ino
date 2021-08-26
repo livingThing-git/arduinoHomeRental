@@ -16,13 +16,13 @@ LiquidCrystal_I2C lcd(0x3F, 16, 2);
 
 const int PzemPin = 32;
 const int RelayPin = 15;
-String address    = "35.185.180.247";               //Your IPaddress or mqtt server url
+String address    = "125.26.235.193";//"35.185.180.247";               //Your IPaddress or mqtt server url
 String serverPort = "1883";               //Your server port
 String clientID   = "";               //Your client id < 120 characters
 String topic      = "/ESP/";               //Your topic     < 128 characters
 String payload    = "";    //Your payload   < 500 characters
-String username   = "livingthing_iot";               //username for mqtt server, username <= 100 characters
-String password   = "thegang617";               //password for mqtt server, password <= 100 characters 
+String username   = "pi";//"livingthing_iot";               //username for mqtt server, username <= 100 characters
+String password   = "raspberry";//"thegang617";               //password for mqtt server, password <= 100 characters 
 int keepalive     = 60;               //keepalive time (second)
 int version       = 3;                //MQTT veresion 3(3.1), 4(3.1.1)
 int cleansession  = 1;                //cleanssion : 0, 1
