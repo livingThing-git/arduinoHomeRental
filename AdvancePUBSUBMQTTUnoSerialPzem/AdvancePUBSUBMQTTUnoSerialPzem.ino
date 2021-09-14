@@ -21,8 +21,8 @@ String serverPort = "1883";               //Your server port
 String clientID   = "";               //Your client id < 120 characters
 String topic      = "/ESP/";               //Your topic     < 128 characters
 String payload    = "";    //Your payload   < 500 characters
-String username   = "pi";//"livingthing_iot";               //username for mqtt server, username <= 100 characters
-String password   = "raspberry";//"thegang617";               //password for mqtt server, password <= 100 characters 
+String username   = "inhandlebroker";//"livingthing_iot";               //username for mqtt server, username <= 100 characters
+String password   = "inHandleElectric";//"thegang617";               //password for mqtt server, password <= 100 characters 
 int keepalive     = 60;               //keepalive time (second)
 int version       = 3;                //MQTT veresion 3(3.1), 4(3.1.1)
 int cleansession  = 1;                //cleanssion : 0, 1
@@ -34,7 +34,7 @@ unsigned int will_retain  = 1;
 unsigned int pubRetained  = 1;
 unsigned int pubDuplicate = 0;
 //test to change 20210315 10:51
-const long interval = 5000;           //time in millisecond 
+const long interval = 1000;           //time in millisecond 
 unsigned long previousMillis = 0;
 bool is_pzem_reset = false;
 AIS_SIM7020E_API nb;
@@ -46,6 +46,7 @@ AIS_SIM7020E_API nb;
    *  will_msg   : String */
 String willOption = nb.willConfig("will_topic",will_qos,will_retain,"will_msg");
 int cnt = 0;
+int cnt_pub_msg = 0;
 SoftwareSerial NodeSerial(12, 14); // RX | TX
 String total_unit = "InHandle";
 
@@ -73,11 +74,13 @@ String added_payload(String metric_name, float metric_value, bool is_end ){
 
 String get_payload(float voltage,                    
                    float energy,
-                   float relay_status) {
+                   float relay_status,
+                   int counter) {
    return "{" + 
           added_payload("voltage",voltage, false) +
           added_payload("energy", energy,false) +
-          added_payload("relay_status", relay_status,true) +
+          added_payload("relay_status", relay_status,false) +
+          added_payload("counter", counter, true) +
            "}"  ;                                                   
  }
 
@@ -99,9 +102,14 @@ void loop() {
         Serial.println(energy);
         Serial.print("\trelay_status: ");
         Serial.println(String(relay_status));
-                
-        payload = get_payload(voltage,energy,relay_status);
-        nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);      //QoS = 0, 1, or 2, retained = 0 or 1, dup = 0 or 1        
+        (cnt_pub_msg<1000)? cnt_pub_msg++ : cnt_pub_msg = cnt;
+        payload = get_payload(voltage,energy,relay_status, cnt_pub_msg);
+        nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);
+        if (abs(cnt_pub_msg - cnt) > 100) {
+          connectStatus();
+        }
+
+//QoS = 0, 1, or 2, retained = 0 or 1, dup = 0 or 1        
 //        lcd.setCursor(0, 0);
 //        lcd.print("net:");
 //        lcd.setCursor( 5, 0);      
