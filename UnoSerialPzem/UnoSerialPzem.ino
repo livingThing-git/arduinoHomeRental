@@ -7,6 +7,7 @@
 PZEM004Tv30 pzem(11, 12);
 SoftwareSerial UnoSerial(3,2); // RX | TX
 const int reset_energy_pin = 4;
+const int reboot_uno = 5;
 void setup() {
   // put your setup code here, to run once:
   pinMode(3, INPUT);

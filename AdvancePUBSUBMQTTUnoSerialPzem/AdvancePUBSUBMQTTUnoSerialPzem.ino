@@ -14,6 +14,7 @@
 // Set the LCD address to 0x3F for a 16 chars and 2 line display
 LiquidCrystal_I2C lcd(0x3F, 16, 2);
 
+const int reboot_uno = 35;
 const int PzemPin = 32;
 const int RelayPin = 15;
 String address    = "125.26.235.193";//"35.185.180.247";               //Your IPaddress or mqtt server url
