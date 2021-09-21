@@ -11,6 +11,8 @@
     |     27 reset      |
 */
 #include "AIS_SIM7020E_API.h"
+//3 seconds WDT
+
 // Set the LCD address to 0x3F for a 16 chars and 2 line display
 LiquidCrystal_I2C lcd(0x3F, 16, 2);
 
@@ -66,6 +68,7 @@ void setup() {
   nb.setCallback(callback);
   previousMillis = millis();
   lcd.begin();
+  
 }
 
 String added_payload(String metric_name, float metric_value, bool is_end ){
@@ -88,9 +91,9 @@ String get_payload(float voltage,
  }
 
 void loop() {
-  nb.MQTTresponse();
-  unsigned long currentMillis = millis();
   
+  nb.MQTTresponse();
+  unsigned long currentMillis = millis();    
   if(currentMillis - previousMillis >= interval){
     int note = 0;
     float voltage = 0.0;
@@ -208,7 +211,7 @@ void callback(String &topic,String &callback_payload, String &QoS,String &retain
   Serial.println("# Message from Topic \""+topic+"\" : "+nb.toString(callback_payload));
   //pzem callback json =  {"command_type":"pzem","value":"a"} or {"command_type":"pzem","value":"b"}
   //Relay callback json = {"command_type":"relay","value":"c"}or {"command_type":"relay","value":"d"}
-  //total_unit callback json = {"command_type":"total_unit","value":"xxxxx"}
+  //total_unit callback json = {"command_type":"total_unit","value":"xxxxx"}  
   String callback_command = nb.toString(callback_payload);
   char alpha_cmd  = callback_command[0];
   switch(alpha_cmd){
@@ -227,8 +230,10 @@ void callback(String &topic,String &callback_payload, String &QoS,String &retain
       digitalWrite(RelayPin, LOW);
       break;
      case 'e'://reset connection
-      connectStatus();
-      break;
+      //connectStatus();
+      nb.begin();
+      setupMQTT();
+      break;     
      default:
      ;     
   }
