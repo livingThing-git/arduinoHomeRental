@@ -211,6 +211,7 @@ void callback(String &topic,String &callback_payload, String &QoS,String &retain
   Serial.println("# Message from Topic \""+topic+"\" : "+nb.toString(callback_payload));
   //pzem callback json =  {"command_type":"pzem","value":"a"} or {"command_type":"pzem","value":"b"}
   //Relay callback json = {"command_type":"relay","value":"c"}or {"command_type":"relay","value":"d"}
+  //NBIOT&MQTT callback json = {"command_type":"connection","value":"e"}
   //total_unit callback json = {"command_type":"total_unit","value":"xxxxx"}  
   String callback_command = nb.toString(callback_payload);
   char alpha_cmd  = callback_command[0];
