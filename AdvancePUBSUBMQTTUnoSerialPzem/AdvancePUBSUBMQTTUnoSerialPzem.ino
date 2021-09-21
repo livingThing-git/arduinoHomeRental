@@ -198,6 +198,8 @@ void connectStatus(){
         }
        Serial.println("reconnectMQ ");
        setupMQTT();
+    }else{
+      Serial.println("nothing to reconnectMQ ");
     }   
 }
 
@@ -215,7 +217,7 @@ void callback(String &topic,String &callback_payload, String &QoS,String &retain
       digitalWrite(PzemPin, HIGH);
       break;
      case 'b'://reset pzem to low
-     is_pzem_reset = false;
+      is_pzem_reset = false;
       digitalWrite(PzemPin, LOW);
       break;
      case 'c'://reset relay to high
@@ -223,6 +225,9 @@ void callback(String &topic,String &callback_payload, String &QoS,String &retain
       break;
      case 'd'://reset relay to low
       digitalWrite(RelayPin, LOW);
+      break;
+     case 'e'://reset connection
+      connectStatus();
       break;
      default:
      ;     
