@@ -30,14 +30,14 @@ int keepalive     = 60;               //keepalive time (second)
 int version       = 3;                //MQTT veresion 3(3.1), 4(3.1.1)
 int cleansession  = 1;                //cleanssion : 0, 1
 int willflag      = 1;                //willflag : 0, 1
-unsigned int subQoS       = 1;
-unsigned int pubQoS       = 1;
-unsigned int will_qos     = 1;
-unsigned int will_retain  = 1;
-unsigned int pubRetained  = 1;
+unsigned int subQoS       = 0;
+unsigned int pubQoS       = 0;
+unsigned int will_qos     = 0;
+unsigned int will_retain  = 0;
+unsigned int pubRetained  = 0;
 unsigned int pubDuplicate = 0;
 //test to change 20210315 10:51
-const long interval = 1000;           //time in millisecond 
+const long interval = 5000;           //time in millisecond 
 unsigned long previousMillis = 0;
 bool is_pzem_reset = false;
 AIS_SIM7020E_API nb;
@@ -100,27 +100,28 @@ void loop() {
     float energy = 0.0;
     int relay_status = 0;    
     int node_unreadable_count = 0;
-    if(NodeSerial.available() > 0){
-      Serial.print("NodeSerial is available");
-    }else{
-      Serial.print("NodeSerial is not available");
-      unavailable_count++;
-      if (unavailable_count>10){       
-        connectStatus();
-        unavailable_count = 0;
-      }
-      note = unavailable_count;
-      payload = get_payload(voltage,energy,relay_status, cnt, note);        
-      nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);
-    }
+    // if(NodeSerial.available() > 0){
+    //   Serial.print("NodeSerial is available");
+    // }else{
+    //   Serial.print("NodeSerial is not available");
+    //   unavailable_count++;
+    //   if (unavailable_count>10){       
+    //     connectStatus();
+    //     unavailable_count = 0;
+    //   }
+    //   note = unavailable_count;
+    //   payload = get_payload(voltage,energy,relay_status, cnt, note);        
+    //   nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);
+    // }
+    connectStatus(); 
     while (NodeSerial.available() > 0) {   
       voltage = NodeSerial.parseFloat();
       energy = NodeSerial.parseFloat();
       relay_status = digitalRead(RelayPin);      
       if (NodeSerial.read() == '\n')
       {
-        previousMillis = currentMillis;
-        connectStatus();        
+        
+               
         Serial.print("voltage: ");    
         Serial.print(voltage); 
         Serial.print("\tenergy: ");
@@ -160,21 +161,23 @@ void loop() {
           }
         }
         // nb.MQTTresponse();
-      }else{
-        note = -1;
-        voltage = 0.0;
-        energy = 0.0;
-        relay_status = 0;
-        node_unreadable_count--;
-        if (node_unreadable_count<10){
-          connectStatus();
-          node_unreadable_count=0;
-        }        
-        note = node_unreadable_count;
-        payload = get_payload(voltage,energy,relay_status, cnt, note);        
-        nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);
       }
+      // else{
+      //   note = -1;
+      //   voltage = 0.0;
+      //   energy = 0.0;
+      //   relay_status = 0;
+      //   node_unreadable_count--;
+      //   if (node_unreadable_count<10){
+      //     connectStatus();
+      //     node_unreadable_count=0;
+      //   }        
+      //   note = node_unreadable_count;
+      //   payload = get_payload(voltage,energy,relay_status, cnt, note);        
+      //   nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);
+      // }
     }
+    previousMillis = currentMillis;
   }
 }
 
