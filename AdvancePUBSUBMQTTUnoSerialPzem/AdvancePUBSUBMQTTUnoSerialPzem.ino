@@ -37,7 +37,8 @@ unsigned int will_retain  = 0;
 unsigned int pubRetained  = 0;
 unsigned int pubDuplicate = 0;
 //test to change 20210315 10:51
-const long interval = 5000;           //time in millisecond 
+const long interval = 2000;           //time in millisecond 
+const long restart_interval = 900000UL; //every hours
 unsigned long previousMillis = 0;
 bool is_pzem_reset = false;
 AIS_SIM7020E_API nb;
@@ -52,6 +53,7 @@ int cnt = 0;
 int unavailable_count = 0;
 SoftwareSerial NodeSerial(12, 14); // RX | TX
 String total_unit = "InHandle";
+unsigned long beginMillis= millis();
 
 void setup() {
  
@@ -71,22 +73,27 @@ void setup() {
   
 }
 
-String added_payload(String metric_name, float metric_value, bool is_end ){
+String added_numeric_payload(String metric_name, float metric_value, bool is_end ){
   String msg = (metric_value>=0)? "\"" + metric_name + "\":" + String(metric_value) : "";
+  return (!is_end)? msg+",": msg;
+}
+
+String added_datetime_payload(String metric_name, String metric_value, bool is_end){
+  String msg = "\"" + metric_name + "\":" + String(metric_value);
   return (!is_end)? msg+",": msg;
 }
 
 String get_payload(float voltage,                    
                    float energy,
                    float relay_status,
-                   int counter,
-                   int note) {
+                   int is_pzem_reset,
+                   String datetime) {
    return "{" + 
-          added_payload("voltage",voltage, false) +
-          added_payload("energy", energy,false) +
-          added_payload("relay_status", relay_status,false) +
-          added_payload("counter", counter, false) +
-          added_payload("note",note,true) +
+          added_numeric_payload("voltage",voltage, false) +
+          added_numeric_payload("energy", energy,false) +
+          added_numeric_payload("relay_status", relay_status,false) +
+          added_numeric_payload("is_pzem_reset", is_pzem_reset, false) +
+          added_datetime_payload("datetime",datetime,true) +
            "}"  ;                                                   
  }
 
@@ -94,6 +101,10 @@ void loop() {
   
   nb.MQTTresponse();
   unsigned long currentMillis = millis();    
+  if(currentMillis - beginMillis >= restart_interval){
+    beginMillis = currentMillis;
+    ESP.restart(); 
+  }
   if(currentMillis - previousMillis >= interval){
     int note = 0;
     float voltage = 0.0;
@@ -129,7 +140,8 @@ void loop() {
         Serial.print("\trelay_status: ");
         Serial.println(String(relay_status));        
         note = 111; //mqtt connect successfully.
-        payload = get_payload(voltage,energy,relay_status, cnt, note);        
+        String datetime = nb.getClock(7).date + "T" +nb.getClock().time;
+        payload = get_payload(voltage,energy,relay_status, int(is_pzem_reset), datetime);        
         nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);
 
 //QoS = 0, 1, or 2, retained = 0 or 1, dup = 0 or 1        
