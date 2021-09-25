@@ -26,11 +26,11 @@ String topic      = "/ESP/";               //Your topic     < 128 characters
 String payload    = "";    //Your payload   < 500 characters
 String username   = "inhandlebroker";//"livingthing_iot";               //username for mqtt server, username <= 100 characters
 String password   = "inHandleElectric";//"thegang617";               //password for mqtt server, password <= 100 characters 
-int keepalive     = 300;               //keepalive time (second)
-int version       = 4;                //MQTT veresion 3(3.1), 4(3.1.1)
+int keepalive     = 60;               //keepalive time (second)
+int version       = 3;                //MQTT veresion 3(3.1), 4(3.1.1)
 int cleansession  = 1;                //cleanssion : 0, 1
 int willflag      = 1;                //willflag : 0, 1
-unsigned int subQoS       = 1;
+unsigned int subQoS       = 0;
 unsigned int pubQoS       = 0;
 unsigned int will_qos     = 0;
 unsigned int will_retain  = 0;
@@ -100,7 +100,7 @@ String get_payload(float voltage,
            "}"  ;                                                   
  }
 
- String getValue(String data, char separator, int index)
+ String getValue(String &data, char separator, int index)
 {
     int found = 0;
     int strIndex[] = { 0, -1 };
@@ -116,14 +116,14 @@ String get_payload(float voltage,
     return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
 }
 
- int get_total_second(String time_str){
+ int get_total_second(String &time_str){
    int hh_to_second = getValue(time_str, ':', 0).toInt()*3600;
    int mm_to_second = getValue(time_str, ':', 1).toInt()*60;
    int second = getValue(time_str, ':', 2).toInt();
     return hh_to_second + mm_to_second + second;
  }
 
- int get_time_diff(String begin_time, String current_time){
+ int get_time_diff(String &begin_time, String &current_time){
    int total_begin_second = get_total_second(begin_time);
    int total_current_second = get_total_second(current_time);
    return total_current_second - total_begin_second;
