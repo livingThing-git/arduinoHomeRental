@@ -37,7 +37,7 @@ unsigned int will_retain  = 0;
 unsigned int pubRetained  = 0;
 unsigned int pubDuplicate = 0;
 //test to change 20210315 10:51
-
+const long interval = 2000; //time in millisecond
 const int process_interval = 2;           //time in second 
 const int restart_interval = 900; //every 15
 
@@ -54,11 +54,11 @@ int cnt = 0;
 int unavailable_count = 0;
 SoftwareSerial NodeSerial(12, 14); // RX | TX
 String total_unit = "InHandle";
+unsigned long beginMillis= millis();
 String begin_time = "";
-String previous_time = "";
 
-void setup() {
- 
+
+void setup() { 
   pinMode(12, INPUT);
   pinMode(14, OUTPUT);
   pinMode(PzemPin, OUTPUT);
@@ -68,12 +68,11 @@ void setup() {
   nb.begin();
   clientID = nb.getIMSI();
   topic = topic + clientID;
+  previousMillis = millis();
   setupMQTT();
   nb.setCallback(callback);
-  lcd.begin();
-  
-  begin_time = nb.getClock().time;
-  previous_time = begin_time;
+  lcd.begin();  
+  begin_time = nb.getClock().time;  
 }
 
 String added_numeric_payload(String metric_name, float metric_value, bool is_end ){
@@ -137,7 +136,7 @@ void loop() {
   if(get_time_diff(begin_time, current_time) >= restart_interval){    
     ESP.restart(); 
   }
-  if(get_time_diff(previous_time, current_time) >= process_interval){
+  if(currentMillis - previousMillis >= interval){
     int note = 0;
     float voltage = 0.0;
     float energy = 0.0;
@@ -149,9 +148,7 @@ void loop() {
       energy = NodeSerial.parseFloat();
       relay_status = digitalRead(RelayPin);      
       if (NodeSerial.read() == '\n')
-      {
-        
-               
+      {                       
         Serial.print("voltage: ");    
         Serial.print(voltage); 
         Serial.print("\tenergy: ");
@@ -193,7 +190,7 @@ void loop() {
         }        
       }      
     }//end while
-    previous_time = current_time;
+    previousMillis = currentMillis;
   }
 }
 
