@@ -38,8 +38,8 @@ unsigned int pubRetained  = 0;
 unsigned int pubDuplicate = 0;
 //test to change 20210315 10:51
 const long interval = 2000; //time in millisecond
-const int process_interval = 2;           //time in second 
 const int restart_interval = 900; //every 15
+unsigned long previousMillis = 0;
 
 bool is_pzem_reset = false;
 AIS_SIM7020E_API nb;
