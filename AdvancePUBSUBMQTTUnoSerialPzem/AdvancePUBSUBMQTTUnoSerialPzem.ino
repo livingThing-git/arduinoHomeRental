@@ -37,7 +37,8 @@ unsigned int will_retain  = 0;
 unsigned int pubRetained  = 0;
 unsigned int pubDuplicate = 0;
 //test to change 20210315 10:51
-const int process_interval = 2000;           //time in second 
+
+const int process_interval = 2;           //time in second 
 const int restart_interval = 900; //every 15
 
 bool is_pzem_reset = false;
@@ -131,69 +132,68 @@ String get_payload(float voltage,
 void loop() {
   
   nb.MQTTresponse();
-  // unsigned long currentMillis = millis();    
+  unsigned long currentMillis = millis();    
   String current_time = nb.getClock().time;
   if(get_time_diff(begin_time, current_time) >= restart_interval){    
     ESP.restart(); 
-  }else{
-    if(get_time_diff(previous_time, current_time)>=process_interval){
-      int note = 0;
-      float voltage = 0.0;
-      float energy = 0.0;
-      int relay_status = 0;    
-      int node_unreadable_count = 0;    
-      connectStatus(); 
-      while (NodeSerial.available() > 0) {   
-        voltage = NodeSerial.parseFloat();
-        energy = NodeSerial.parseFloat();
-        relay_status = digitalRead(RelayPin);      
-        if (NodeSerial.read() == '\n')
-        {
-          
-                 
-          Serial.print("voltage: ");    
-          Serial.print(voltage); 
-          Serial.print("\tenergy: ");
-          Serial.println(energy);
-          Serial.print("\trelay_status: ");
-          Serial.println(String(relay_status));        
-          note = 111; //mqtt connect successfully.
-          String datetime = nb.getClock(7).date + "T" +nb.getClock().time;
-          payload = get_payload(voltage,energy,relay_status, int(is_pzem_reset), datetime);        
-          nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);
+  }
+  if(get_time_diff(previous_time, current_time) >= process_interval){
+    int note = 0;
+    float voltage = 0.0;
+    float energy = 0.0;
+    int relay_status = 0;    
+    int node_unreadable_count = 0;    
+    connectStatus(); 
+    while (NodeSerial.available() > 0) {   
+      voltage = NodeSerial.parseFloat();
+      energy = NodeSerial.parseFloat();
+      relay_status = digitalRead(RelayPin);      
+      if (NodeSerial.read() == '\n')
+      {
+        
+               
+        Serial.print("voltage: ");    
+        Serial.print(voltage); 
+        Serial.print("\tenergy: ");
+        Serial.println(energy);
+        Serial.print("\trelay_status: ");
+        Serial.println(String(relay_status));        
+        note = 111; //mqtt connect successfully.
+        String datetime = nb.getClock(7).date + "T" +nb.getClock().time;
+        payload = get_payload(voltage,energy,relay_status, int(is_pzem_reset), datetime);        
+        nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);
 
-  //QoS = 0, 1, or 2, retained = 0 or 1, dup = 0 or 1        
-  //        lcd.setCursor(0, 0);
-  //        lcd.print("net:");
-  //        lcd.setCursor( 5, 0);      
-          lcd.setCursor( 4, 0);      
-          //please change total_unit here after server code finish
-          lcd.print(total_unit);
-  //        lcd.setCursor(12, 0);
-  //        lcd.print("unit");
-          lcd.setCursor( 0, 1);
-          lcd.print("eng:");
-          lcd.setCursor( 5, 1);
-          lcd.print(energy);            
-          lcd.setCursor(12, 1);
-          lcd.print("unit");
-          if(is_pzem_reset){
-            digitalWrite(PzemPin, HIGH);
-            cnt++;
+//QoS = 0, 1, or 2, retained = 0 or 1, dup = 0 or 1        
+//        lcd.setCursor(0, 0);
+//        lcd.print("net:");
+//        lcd.setCursor( 5, 0);      
+        lcd.setCursor( 4, 0);      
+        //please change total_unit here after server code finish
+        lcd.print(total_unit);
+//        lcd.setCursor(12, 0);
+//        lcd.print("unit");
+        lcd.setCursor( 0, 1);
+        lcd.print("eng:");
+        lcd.setCursor( 5, 1);
+        lcd.print(energy);            
+        lcd.setCursor(12, 1);
+        lcd.print("unit");
+        if(is_pzem_reset){
+          digitalWrite(PzemPin, HIGH);
+          cnt++;
+          Serial.print("cnt:");
+          Serial.println(cnt);
+          if(cnt>49){
             Serial.print("cnt:");
             Serial.println(cnt);
-            if(cnt>49){
-              Serial.print("cnt:");
-              Serial.println(cnt);
-              digitalWrite(PzemPin, LOW);
-              cnt = 0;
-              is_pzem_reset = false;
-            }
-          }        
-        }      
-      }//end while
-      previous_time = current_time;
-    }
+            digitalWrite(PzemPin, LOW);
+            cnt = 0;
+            is_pzem_reset = false;
+          }
+        }        
+      }      
+    }//end while
+    previous_time = current_time;
   }
 }
 
