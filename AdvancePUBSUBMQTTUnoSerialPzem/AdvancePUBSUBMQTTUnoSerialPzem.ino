@@ -26,7 +26,7 @@ String topic      = "/ESP/";               //Your topic     < 128 characters
 String payload    = "";    //Your payload   < 500 characters
 String username   = "inhandlebroker";//"livingthing_iot";               //username for mqtt server, username <= 100 characters
 String password   = "inHandleElectric";//"thegang617";               //password for mqtt server, password <= 100 characters 
-int keepalive     = 60;               //keepalive time (second)
+int keepalive     = 300;               //keepalive time (second)
 int version       = 3;                //MQTT veresion 3(3.1), 4(3.1.1)
 int cleansession  = 1;                //cleanssion : 0, 1
 int willflag      = 1;                //willflag : 0, 1
@@ -37,9 +37,9 @@ unsigned int will_retain  = 0;
 unsigned int pubRetained  = 0;
 unsigned int pubDuplicate = 0;
 //test to change 20210315 10:51
-const long interval = 2000;           //time in millisecond 
-const long restart_interval = 900000UL; //every hours
-unsigned long previousMillis = 0;
+const int process_interval = 2000;           //time in second 
+const int restart_interval = 900; //every 15
+
 bool is_pzem_reset = false;
 AIS_SIM7020E_API nb;
   /*  This part is for setupAdvanceMQTT.
@@ -53,7 +53,8 @@ int cnt = 0;
 int unavailable_count = 0;
 SoftwareSerial NodeSerial(12, 14); // RX | TX
 String total_unit = "InHandle";
-unsigned long beginMillis= millis();
+String begin_time = "";
+String previous_time = "";
 
 void setup() {
  
@@ -68,9 +69,10 @@ void setup() {
   topic = topic + clientID;
   setupMQTT();
   nb.setCallback(callback);
-  previousMillis = millis();
   lcd.begin();
   
+  begin_time = nb.getClock().time;
+  previous_time = begin_time;
 }
 
 String added_numeric_payload(String metric_name, float metric_value, bool is_end ){
@@ -97,99 +99,101 @@ String get_payload(float voltage,
            "}"  ;                                                   
  }
 
+ String getValue(String data, char separator, int index)
+{
+    int found = 0;
+    int strIndex[] = { 0, -1 };
+    int maxIndex = data.length() - 1;
+
+    for (int i = 0; i <= maxIndex && found <= index; i++) {
+        if (data.charAt(i) == separator || i == maxIndex) {
+            found++;
+            strIndex[0] = strIndex[1] + 1;
+            strIndex[1] = (i == maxIndex) ? i+1 : i;
+        }
+    }
+    return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
+}
+
+ int get_total_second(String time_str){
+   int hh_to_second = getValue(time_str, ':', 0).toInt()*3600;
+   int mm_to_second = getValue(time_str, ':', 1).toInt()*60;
+   int second = getValue(time_str, ':', 2).toInt();
+    return hh_to_second + mm_to_second + second;
+ }
+
+ int get_time_diff(String begin_time, String current_time){
+   int total_begin_second = get_total_second(begin_time);
+   int total_current_second = get_total_second(current_time);
+   return total_current_second - total_begin_second;
+ }  
+
 void loop() {
   
   nb.MQTTresponse();
-  unsigned long currentMillis = millis();    
-  if(currentMillis - beginMillis >= restart_interval){
-    beginMillis = currentMillis;
+  // unsigned long currentMillis = millis();    
+  String current_time = nb.getClock().time;
+  if(get_time_diff(begin_time, current_time) >= restart_interval){    
     ESP.restart(); 
-  }
-  if(currentMillis - previousMillis >= interval){
-    int note = 0;
-    float voltage = 0.0;
-    float energy = 0.0;
-    int relay_status = 0;    
-    int node_unreadable_count = 0;
-    // if(NodeSerial.available() > 0){
-    //   Serial.print("NodeSerial is available");
-    // }else{
-    //   Serial.print("NodeSerial is not available");
-    //   unavailable_count++;
-    //   if (unavailable_count>10){       
-    //     connectStatus();
-    //     unavailable_count = 0;
-    //   }
-    //   note = unavailable_count;
-    //   payload = get_payload(voltage,energy,relay_status, cnt, note);        
-    //   nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);
-    // }
-    connectStatus(); 
-    while (NodeSerial.available() > 0) {   
-      voltage = NodeSerial.parseFloat();
-      energy = NodeSerial.parseFloat();
-      relay_status = digitalRead(RelayPin);      
-      if (NodeSerial.read() == '\n')
-      {
-        
-               
-        Serial.print("voltage: ");    
-        Serial.print(voltage); 
-        Serial.print("\tenergy: ");
-        Serial.println(energy);
-        Serial.print("\trelay_status: ");
-        Serial.println(String(relay_status));        
-        note = 111; //mqtt connect successfully.
-        String datetime = nb.getClock(7).date + "T" +nb.getClock().time;
-        payload = get_payload(voltage,energy,relay_status, int(is_pzem_reset), datetime);        
-        nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);
+  }else{
+    if(get_time_diff(previous_time, current_time)>=process_interval){
+      int note = 0;
+      float voltage = 0.0;
+      float energy = 0.0;
+      int relay_status = 0;    
+      int node_unreadable_count = 0;    
+      connectStatus(); 
+      while (NodeSerial.available() > 0) {   
+        voltage = NodeSerial.parseFloat();
+        energy = NodeSerial.parseFloat();
+        relay_status = digitalRead(RelayPin);      
+        if (NodeSerial.read() == '\n')
+        {
+          
+                 
+          Serial.print("voltage: ");    
+          Serial.print(voltage); 
+          Serial.print("\tenergy: ");
+          Serial.println(energy);
+          Serial.print("\trelay_status: ");
+          Serial.println(String(relay_status));        
+          note = 111; //mqtt connect successfully.
+          String datetime = nb.getClock(7).date + "T" +nb.getClock().time;
+          payload = get_payload(voltage,energy,relay_status, int(is_pzem_reset), datetime);        
+          nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);
 
-//QoS = 0, 1, or 2, retained = 0 or 1, dup = 0 or 1        
-//        lcd.setCursor(0, 0);
-//        lcd.print("net:");
-//        lcd.setCursor( 5, 0);      
-        lcd.setCursor( 4, 0);      
-        //please change total_unit here after server code finish
-        lcd.print(total_unit);
-//        lcd.setCursor(12, 0);
-//        lcd.print("unit");
-        lcd.setCursor( 0, 1);
-        lcd.print("eng:");
-        lcd.setCursor( 5, 1);
-        lcd.print(energy);            
-        lcd.setCursor(12, 1);
-        lcd.print("unit");
-        if(is_pzem_reset){
-          digitalWrite(PzemPin, HIGH);
-          cnt++;
-          Serial.print("cnt:");
-          Serial.println(cnt);
-          if(cnt>49){
+  //QoS = 0, 1, or 2, retained = 0 or 1, dup = 0 or 1        
+  //        lcd.setCursor(0, 0);
+  //        lcd.print("net:");
+  //        lcd.setCursor( 5, 0);      
+          lcd.setCursor( 4, 0);      
+          //please change total_unit here after server code finish
+          lcd.print(total_unit);
+  //        lcd.setCursor(12, 0);
+  //        lcd.print("unit");
+          lcd.setCursor( 0, 1);
+          lcd.print("eng:");
+          lcd.setCursor( 5, 1);
+          lcd.print(energy);            
+          lcd.setCursor(12, 1);
+          lcd.print("unit");
+          if(is_pzem_reset){
+            digitalWrite(PzemPin, HIGH);
+            cnt++;
             Serial.print("cnt:");
             Serial.println(cnt);
-            digitalWrite(PzemPin, LOW);
-            cnt = 0;
-            is_pzem_reset = false;
-          }
-        }
-        // nb.MQTTresponse();
-      }
-      // else{
-      //   note = -1;
-      //   voltage = 0.0;
-      //   energy = 0.0;
-      //   relay_status = 0;
-      //   node_unreadable_count--;
-      //   if (node_unreadable_count<10){
-      //     connectStatus();
-      //     node_unreadable_count=0;
-      //   }        
-      //   note = node_unreadable_count;
-      //   payload = get_payload(voltage,energy,relay_status, cnt, note);        
-      //   nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);
-      // }
+            if(cnt>49){
+              Serial.print("cnt:");
+              Serial.println(cnt);
+              digitalWrite(PzemPin, LOW);
+              cnt = 0;
+              is_pzem_reset = false;
+            }
+          }        
+        }      
+      }//end while
+      previous_time = current_time;
     }
-    previousMillis = currentMillis;
   }
 }
 
