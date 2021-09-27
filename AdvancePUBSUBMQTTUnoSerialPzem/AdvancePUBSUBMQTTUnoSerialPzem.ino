@@ -27,18 +27,18 @@ String payload    = "";    //Your payload   < 500 characters
 String username   = "inhandlebroker";//"livingthing_iot";               //username for mqtt server, username <= 100 characters
 String password   = "inHandleElectric";//"thegang617";               //password for mqtt server, password <= 100 characters 
 int keepalive     = 60;               //keepalive time (second)
-int version       = 3;                //MQTT veresion 3(3.1), 4(3.1.1)
-int cleansession  = 1;                //cleanssion : 0, 1
+int version       = 4;                //MQTT veresion 3(3.1), 4(3.1.1)
+int cleansession  = 0;                //cleanssion : 0, 1
 int willflag      = 1;                //willflag : 0, 1
-unsigned int subQoS       = 0;
-unsigned int pubQoS       = 0;
+unsigned int subQoS       = 1;
+unsigned int pubQoS       = 1;
 unsigned int will_qos     = 0;
 unsigned int will_retain  = 0;
 unsigned int pubRetained  = 0;
 unsigned int pubDuplicate = 0;
 //test to change 20210315 10:51
 const long interval = 2000;           //time in millisecond 
-const long restart_interval = 900000UL; //every hours
+const long restart_interval = 900000UL; //every 15 minutes
 unsigned long previousMillis = 0;
 bool is_pzem_reset = false;
 AIS_SIM7020E_API nb;
