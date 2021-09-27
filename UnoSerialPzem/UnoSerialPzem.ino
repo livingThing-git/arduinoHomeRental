@@ -1,3 +1,4 @@
+#include <Scheduler.h>
 #include <PZEM004Tv30.h>
 #include <SoftwareSerial.h>
 /* Use software serial for the PZEM
@@ -8,12 +9,14 @@ PZEM004Tv30 pzem(11, 12);
 SoftwareSerial UnoSerial(3,2); // RX | TX
 const int reset_energy_pin = 4;
 const int reboot_uno = 5;
+const int restart_interval = 300000;
 void setup() {
   // put your setup code here, to run once:
   pinMode(3, INPUT);
   pinMode(2, OUTPUT);
   Serial.begin(115200);
   UnoSerial.begin(57600); 
+  Scheduler.startLoop(loop2);
 }
 
 float get_measurement(float measurement){
@@ -32,4 +35,14 @@ void loop() {
   delay(500);
   if(digitalRead(reset_energy_pin)==HIGH)
     pzem.resetEnergy();
+}
+
+void(* resetFunc) (void) = 0;//declare reset function at address 0
+
+// Task no.2: blink LED with 0.1 second delay.
+void loop2() {
+  
+  delay(restart_interval);
+  Serial.println("resetting");
+  resetFunc();  //call reset
 }
