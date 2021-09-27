@@ -1,3 +1,4 @@
+#include <Scheduler.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <SoftwareSerial.h>
@@ -26,19 +27,19 @@ String topic      = "/ESP/";               //Your topic     < 128 characters
 String payload    = "";    //Your payload   < 500 characters
 String username   = "inhandlebroker";//"livingthing_iot";               //username for mqtt server, username <= 100 characters
 String password   = "inHandleElectric";//"thegang617";               //password for mqtt server, password <= 100 characters 
-int keepalive     = 60;               //keepalive time (second)
-int version       = 3;                //MQTT veresion 3(3.1), 4(3.1.1)
-int cleansession  = 1;                //cleanssion : 0, 1
+int keepalive     = 300;               //keepalive time (second)
+int version       = 4;                //MQTT veresion 3(3.1), 4(3.1.1)
+int cleansession  = 0;                //cleanssion : 0, 1
 int willflag      = 1;                //willflag : 0, 1
-unsigned int subQoS       = 0;
-unsigned int pubQoS       = 0;
+unsigned int subQoS       = 1;
+unsigned int pubQoS       = 1;
 unsigned int will_qos     = 0;
 unsigned int will_retain  = 0;
 unsigned int pubRetained  = 0;
 unsigned int pubDuplicate = 0;
 //test to change 20210315 10:51
 const long interval = 2000;           //time in millisecond 
-const long restart_interval = 900000UL; //every hours
+const long restart_interval = 600000UL; //every 10 min
 unsigned long previousMillis = 0;
 bool is_pzem_reset = false;
 AIS_SIM7020E_API nb;
@@ -101,10 +102,10 @@ void loop() {
   
   nb.MQTTresponse();
   unsigned long currentMillis = millis();    
-  if(currentMillis - beginMillis >= restart_interval){
-    beginMillis = currentMillis;
-    ESP.restart(); 
-  }
+  // if(currentMillis - beginMillis >= restart_interval){
+  //   beginMillis = currentMillis;
+  //   ESP.restart(); 
+  // }
   if(currentMillis - previousMillis >= interval){
     int note = 0;
     float voltage = 0.0;
@@ -131,8 +132,7 @@ void loop() {
       relay_status = digitalRead(RelayPin);      
       if (NodeSerial.read() == '\n')
       {
-        
-               
+                       
         Serial.print("voltage: ");    
         Serial.print(voltage); 
         Serial.print("\tenergy: ");
