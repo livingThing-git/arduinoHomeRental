@@ -26,7 +26,7 @@ String topic      = "/ESP/";               //Your topic     < 128 characters
 String payload    = "";    //Your payload   < 500 characters
 String username   = "inhandlebroker";//"livingthing_iot";               //username for mqtt server, username <= 100 characters
 String password   = "inHandleElectric";//"thegang617";               //password for mqtt server, password <= 100 characters 
-int keepalive     = 60;               //keepalive time (second)
+int keepalive     = 60;               //keepalive time (second)       
 int version       = 4;                //MQTT veresion 3(3.1), 4(3.1.1)
 int cleansession  = 0;                //cleanssion : 0, 1
 int willflag      = 1;                //willflag : 0, 1
