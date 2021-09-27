@@ -1,4 +1,4 @@
-#include <Scheduler.h>
+#include <EasyScheduler.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <SoftwareSerial.h>
@@ -39,7 +39,7 @@ unsigned int pubRetained  = 0;
 unsigned int pubDuplicate = 0;
 //test to change 20210315 10:51
 const long interval = 2000;           //time in millisecond 
-const long restart_interval = 600000UL; //every 10 min
+const long restart_interval = 60000UL; //every 10 min
 unsigned long previousMillis = 0;
 bool is_pzem_reset = false;
 AIS_SIM7020E_API nb;
@@ -55,7 +55,8 @@ int unavailable_count = 0;
 SoftwareSerial NodeSerial(12, 14); // RX | TX
 String total_unit = "InHandle";
 unsigned long beginMillis= millis();
-
+Schedular Task1; // สร้างงาน Task
+Schedular Task2;
 void setup() {
  
   pinMode(12, INPUT);
@@ -71,7 +72,8 @@ void setup() {
   nb.setCallback(callback);
   previousMillis = millis();
   lcd.begin();
-  
+  Task1.start(); // สั่งให้งาน Task เริ่มทำงาน
+  Task2.start(); // สั่งให้งาน Task เริ่มทำงาน
 }
 
 String added_numeric_payload(String metric_name, float metric_value, bool is_end ){
@@ -98,8 +100,12 @@ String get_payload(float voltage,
            "}"  ;                                                   
  }
 
-void loop() {
-  
+ void loop() {
+    Task1.check(restart_loop, 100); // ทำงานฟังก์ชั่น LED1_blink ทุก 1 วินาที
+    Task2.check(nbiot_loop, 100); // ทำงานฟังก์ชั่น LED1_blink ทุก 1 วินาที
+ }
+
+void nbiot_loop() {  
   nb.MQTTresponse();
   unsigned long currentMillis = millis();    
   // if(currentMillis - beginMillis >= restart_interval){
@@ -258,4 +264,9 @@ void callback(String &topic,String &callback_payload, String &QoS,String &retain
   if(retained.indexOf(F("1"))!=-1){
     Serial.println("# Retained = "+retained);
   }
+}
+
+void restart_loop() {
+  delay(restart_interval);
+  ESP.restart();
 }
