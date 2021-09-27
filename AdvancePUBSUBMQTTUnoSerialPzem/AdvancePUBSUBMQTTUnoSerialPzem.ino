@@ -72,8 +72,9 @@ void setup() {
   nb.setCallback(callback);
   previousMillis = millis();
   lcd.begin();
-  Task1.start(); // สั่งให้งาน Task เริ่มทำงาน
   Task2.start(); // สั่งให้งาน Task เริ่มทำงาน
+  Task1.start(); // สั่งให้งาน Task เริ่มทำงาน
+  
 }
 
 String added_numeric_payload(String metric_name, float metric_value, bool is_end ){
@@ -101,8 +102,8 @@ String get_payload(float voltage,
  }
 
  void loop() {
-    Task1.check(restart_loop, 100); // ทำงานฟังก์ชั่น LED1_blink ทุก 1 วินาที
-    Task2.check(nbiot_loop, 100); // ทำงานฟังก์ชั่น LED1_blink ทุก 1 วินาที
+   Task2.check(nbiot_loop, 100); // ทำงานฟังก์ชั่น LED1_blink ทุก 1 วินาที
+   Task1.check(restart_loop, 60000); // ทำงานฟังก์ชั่น LED1_blink ทุก 1 วินาที    
  }
 
 void nbiot_loop() {  
@@ -267,6 +268,6 @@ void callback(String &topic,String &callback_payload, String &QoS,String &retain
 }
 
 void restart_loop() {
-  delay(restart_interval);
+  // delay(restart_interval);
   ESP.restart();
 }
