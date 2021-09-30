@@ -99,8 +99,7 @@ String get_payload(float voltage,
 
 void loop() {
   
-  nb.MQTTresponse();
-  unsigned long currentMillis = millis();    
+  nb.MQTTresponse();  
   if(!nb.MQTTstatus()){
       long now = millis();
       if (now - lastReconnectAttempt > 5000) {
@@ -115,27 +114,11 @@ void loop() {
         lastReconnectAttempt = 0;        
       }
   }else{
-
-  }
-  if(currentMillis - previousMillis >= interval){
     int note = 0;
     float voltage = 0.0;
     float energy = 0.0;
     int relay_status = 0;    
     int node_unreadable_count = 0;
-    // if(NodeSerial.available() > 0){
-    //   Serial.print("NodeSerial is available");
-    // }else{
-    //   Serial.print("NodeSerial is not available");
-    //   unavailable_count++;
-    //   if (unavailable_count>10){       
-    //     connectStatus();
-    //     unavailable_count = 0;
-    //   }
-    //   note = unavailable_count;
-    //   payload = get_payload(voltage,energy,relay_status, cnt, note);        
-    //   nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);
-    // }
     connectStatus(); 
     while (NodeSerial.available() > 0) {   
       voltage = NodeSerial.parseFloat();
@@ -152,17 +135,9 @@ void loop() {
         note = 111; //mqtt connect successfully.
         String datetime = nb.getClock(7).date + "T" +nb.getClock().time;
         payload = get_payload(voltage,energy,relay_status, int(is_pzem_reset), datetime);        
-        nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);
-
-//QoS = 0, 1, or 2, retained = 0 or 1, dup = 0 or 1        
-//        lcd.setCursor(0, 0);
-//        lcd.print("net:");
-//        lcd.setCursor( 5, 0);      
-        lcd.setCursor( 4, 0);      
-        //please change total_unit here after server code finish
+        nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);  
+        lcd.setCursor( 4, 0);              
         lcd.print(total_unit);
-//        lcd.setCursor(12, 0);
-//        lcd.print("unit");
         lcd.setCursor( 0, 1);
         lcd.print("eng:");
         lcd.setCursor( 5, 1);
@@ -181,26 +156,10 @@ void loop() {
             cnt = 0;
             is_pzem_reset = false;
           }
-        }
-        // nb.MQTTresponse();
-      }
-      // else{
-      //   note = -1;
-      //   voltage = 0.0;
-      //   energy = 0.0;
-      //   relay_status = 0;
-      //   node_unreadable_count--;
-      //   if (node_unreadable_count<10){
-      //     connectStatus();
-      //     node_unreadable_count=0;
-      //   }        
-      //   note = node_unreadable_count;
-      //   payload = get_payload(voltage,energy,relay_status, cnt, note);        
-      //   nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);
-      // }
-    }
-    previousMillis = currentMillis;
-  }
+        }        
+      }     
+    }    
+  }  
 }
 
 //=========== MQTT Function ================
