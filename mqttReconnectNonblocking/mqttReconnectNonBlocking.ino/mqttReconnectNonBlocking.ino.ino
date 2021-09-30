@@ -101,9 +101,21 @@ void loop() {
   
   nb.MQTTresponse();
   unsigned long currentMillis = millis();    
-  if(currentMillis - beginMillis >= restart_interval){
-    beginMillis = currentMillis;
-    ESP.restart(); 
+  if(!nb.MQTTstatus()){
+      long now = millis();
+      if (now - lastReconnectAttempt > 5000) {
+        lastReconnectAttempt = now;
+        // Attempt to reconnect
+        if(!nb.NBstatus()){
+           Serial.println("reconnectNB ");
+           nb.begin();
+        }
+        Serial.println("reconnectMQ ");
+        setupMQTT();
+        lastReconnectAttempt = 0;        
+      }
+  }else{
+
   }
   if(currentMillis - previousMillis >= interval){
     int note = 0;
