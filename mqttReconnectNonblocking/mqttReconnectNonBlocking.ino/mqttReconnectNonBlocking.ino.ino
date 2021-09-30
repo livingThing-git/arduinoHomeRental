@@ -53,7 +53,7 @@ int cnt = 0;
 int unavailable_count = 0;
 SoftwareSerial NodeSerial(12, 14); // RX | TX
 String total_unit = "InHandle";
-unsigned long beginMillis= millis();
+long lastReconnectAttempt = 0;
 
 void setup() {
  
