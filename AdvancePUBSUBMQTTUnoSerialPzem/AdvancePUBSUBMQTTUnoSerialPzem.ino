@@ -38,7 +38,7 @@ unsigned int pubRetained  = 0;
 unsigned int pubDuplicate = 0;
 //test to change 20210315 10:51
 const long interval = 2000;           //time in millisecond 
-const long restart_interval = 900000UL; //every 15 minutes
+const long restart_interval = 180000UL; //every 3 minutes
 unsigned long previousMillis = 0;
 bool is_pzem_reset = false;
 AIS_SIM7020E_API nb;
@@ -130,9 +130,7 @@ void loop() {
       energy = NodeSerial.parseFloat();
       relay_status = digitalRead(RelayPin);      
       if (NodeSerial.read() == '\n')
-      {
-        
-               
+      {                       
         Serial.print("voltage: ");    
         Serial.print(voltage); 
         Serial.print("\tenergy: ");
