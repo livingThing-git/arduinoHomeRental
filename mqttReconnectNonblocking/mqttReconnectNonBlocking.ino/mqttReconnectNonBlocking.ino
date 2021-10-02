@@ -117,13 +117,11 @@ void loop() {
         setupMQTT();
         lastReconnectAttempt = 0;        
       }
-  }else{    
-    
+  }else{        
     float voltage = 0.0;
     float energy = 0.0;
     int relay_status = 0;    
-    int node_unreadable_count = 0;
-    connectStatus(); 
+    int node_unreadable_count = 0;    
     while (NodeSerial.available() > 0) {   
       voltage = NodeSerial.parseFloat();
       energy = NodeSerial.parseFloat();
@@ -178,7 +176,7 @@ void setupMQTT(){
     }
     nb.subscribe(topic,subQoS);
   //  nb.unsubscribe(topic); 
-}
+}``
 
 void connectStatus(){
     if(!nb.MQTTstatus()){
