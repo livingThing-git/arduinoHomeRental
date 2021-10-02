@@ -39,7 +39,7 @@ unsigned int pubDuplicate = 0;
 //test to change 20210315 10:51
 const long interval = 2000;           //time in millisecond 
 const long restart_interval = 180000UL; //every 3 minutes
-unsigned long previousMillis = 0;
+// unsigned long previousMillis = 0;
 bool is_pzem_reset = false;
 AIS_SIM7020E_API nb;
   /*  This part is for setupAdvanceMQTT.
@@ -54,6 +54,7 @@ int unavailable_count = 0;
 SoftwareSerial NodeSerial(12, 14); // RX | TX
 String total_unit = "InHandle";
 long lastReconnectAttempt = 0;
+long startTime = 0;
 
 void setup() {
  
@@ -68,7 +69,7 @@ void setup() {
   topic = topic + clientID;
   setupMQTT();
   nb.setCallback(callback);
-  previousMillis = millis();
+  startTime = millis();
   lcd.begin();
   
 }
@@ -100,8 +101,11 @@ String get_payload(float voltage,
 void loop() {
   
   nb.MQTTresponse();  
-  if(!nb.MQTTstatus()){
-      long now = millis();
+  long now = millis();
+  if (now - startTime >= restart_interval) {
+    ESP.restart();
+  }
+  if(!nb.MQTTstatus()){      
       if (now - lastReconnectAttempt > 5000) {
         lastReconnectAttempt = now;
         // Attempt to reconnect
@@ -113,8 +117,8 @@ void loop() {
         setupMQTT();
         lastReconnectAttempt = 0;        
       }
-  }else{
-    int note = 0;
+  }else{    
+    
     float voltage = 0.0;
     float energy = 0.0;
     int relay_status = 0;    
@@ -131,8 +135,7 @@ void loop() {
         Serial.print("\tenergy: ");
         Serial.println(energy);
         Serial.print("\trelay_status: ");
-        Serial.println(String(relay_status));        
-        note = 111; //mqtt connect successfully.
+        Serial.println(String(relay_status));                
         String datetime = nb.getClock(7).date + "T" +nb.getClock().time;
         payload = get_payload(voltage,energy,relay_status, int(is_pzem_reset), datetime);        
         nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);  
@@ -214,10 +217,8 @@ void callback(String &topic,String &callback_payload, String &QoS,String &retain
      case 'd'://reset relay to low
       digitalWrite(RelayPin, LOW);
       break;
-     case 'e'://reset connection
-      //connectStatus();
-      nb.begin();
-      setupMQTT();
+     case 'e'://restart nbiot      
+      ESP.restart();      
       break;     
      default:
      ;     
