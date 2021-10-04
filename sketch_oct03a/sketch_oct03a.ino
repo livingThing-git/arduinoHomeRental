@@ -89,11 +89,11 @@ String get_payload(float voltage,
                    int is_pzem_reset,
                    String datetime) {
    return "{" + 
-          added_numeric_payload("v",voltage, false) +
-          added_numeric_payload("e", energy,false) +
-          added_numeric_payload("r", relay_status,false) +
-          added_numeric_payload("i", is_pzem_reset, false) +
-          added_datetime_payload("t",datetime,true) +
+          added_numeric_payload("voltage",voltage, false) +
+          added_numeric_payload("energy", energy,false) +
+          added_numeric_payload("relay_status", relay_status,false) +
+          added_numeric_payload("is_pzem_reset", is_pzem_reset, false) +
+          added_datetime_payload("datetime",datetime,true) +
            "}"  ;                                                   
  }
 
@@ -101,10 +101,7 @@ void loop() {
   
   nb.MQTTresponse();      
   if(!nb.MQTTstatus()){      
-    long now = millis();
-    if (now - startTime >= restart_interval) {
-        ESP.restart();
-      }
+    long now = millis();      
     if (now - lastReconnectAttempt > 5000) {
       lastReconnectAttempt = now;
       // Attempt to reconnect
