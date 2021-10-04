@@ -73,7 +73,12 @@ void setup() {
   startTime = millis();
 }
 
-String added_numeric_payload(String metric_name, float metric_value, bool is_end ){
+String added_decimal_payload(String metric_name, float metric_value, bool is_end ){
+  String msg = (metric_value>=0)? "\"" + metric_name + "\":" + String(metric_value) : "";
+  return (!is_end)? msg+",": msg;
+}
+
+String added_integer_payload(String metric_name,int metric_value, bool is_end ){
   String msg = (metric_value>=0)? "\"" + metric_name + "\":" + String(metric_value) : "";
   return (!is_end)? msg+",": msg;
 }
@@ -89,10 +94,10 @@ String get_payload(float voltage,
                    int is_pzem_reset,
                    String datetime) {
    return "{" + 
-          added_numeric_payload("v",voltage, false) +
-          added_numeric_payload("e", energy,false) +
-          added_numeric_payload("r", relay_status,false) +
-          added_numeric_payload("i", is_pzem_reset, false) +
+          added_decimal_payload("v",voltage, false) +
+          added_decimal_payload("e", energy,false) +
+          added_integer_payload("r", relay_status,false) +
+          added_integer_payload("i", is_pzem_reset, false) +
           added_datetime_payload("t",datetime,true) +
            "}"  ;                                                   
  }
