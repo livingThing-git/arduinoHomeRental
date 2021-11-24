@@ -19,10 +19,10 @@ LiquidCrystal_I2C lcd(0x3F, 16, 2);
 const int reboot_uno = 35;
 const int PzemPin = 32;
 const int RelayPin = 15;
-String address    = "125.26.235.193";//"35.185.180.247";               //Your IPaddress or mqtt server url
-String serverPort = "1883";               //Your server port
-String clientID   = "";               //Your client id < 120 characters
-String topic      = "/ESP/";               //Your topic     < 128 characters
+String address    = "lucky.7663handshake.co";//Your IPaddress or mqtt server url
+String serverPort = "1883";          //Your server port
+String clientID   = "";              //Your client id < 120 characters
+String topic      = "/ESP/";         //Your topic     < 128 characters
 String payload    = "";    //Your payload   < 500 characters
 String username   = "inhandlebroker";//"livingthing_iot";               //username for mqtt server, username <= 100 characters
 String password   = "inHandleElectric";//"thegang617";               //password for mqtt server, password <= 100 characters 
