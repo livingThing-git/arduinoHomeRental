@@ -73,18 +73,18 @@ void setup() {
   startTime = millis();
 }
 
-String added_decimal_payload(String metric_name, float metric_value, bool is_end ){
-  String msg = (metric_value>=0)? "\"" + metric_name + "\":" + String(metric_value) : "";
+String added_decimal_payload(float metric_value, bool is_end ){
+  String msg = String(metric_value);
   return (!is_end)? msg+",": msg;
 }
 
-String added_integer_payload(String metric_name,int metric_value, bool is_end ){
-  String msg = (metric_value>=0)? "\"" + metric_name + "\":" + String(metric_value) : "";
+String added_integer_payload(int metric_value, bool is_end ){
+  String msg = String(metric_value);
   return (!is_end)? msg+",": msg;
 }
 
-String added_datetime_payload(String metric_name, String metric_value, bool is_end){
-  String msg = "\"" + metric_name + "\":" + String(metric_value);
+String added_string_payload(String metric_value, bool is_end){
+  String msg = String(metric_value);
   return (!is_end)? msg+",": msg;
 }
 
@@ -92,13 +92,15 @@ String get_payload(float voltage,
                    float energy,
                    float relay_status,
                    int is_pzem_reset,
+                   String clientID,
                    String datetime) {
    return "{" + 
-          added_decimal_payload("v",voltage, false) +
-          added_decimal_payload("e", energy,false) +
-          added_integer_payload("r", relay_status,false) +
-          added_integer_payload("i", is_pzem_reset, false) +
-          added_datetime_payload("t",datetime,true) +
+          added_decimal_payload(voltage, false) +
+          added_decimal_payload(energy,false) +
+          added_integer_payload(relay_status,false) +
+          added_integer_payload(is_pzem_reset, false) +
+          added_string_payload(clientID,false) +
+          added_string_payload(datetime,true) +
            "}"  ;                                                   
  }
 
@@ -138,8 +140,8 @@ void loop() {
         Serial.println(energy);
         Serial.print("\trelay_status: ");
         Serial.println(String(relay_status));                
-        String datetime = nb.getClock(7).date + "T" +nb.getClock().time;
-        payload = get_payload(voltage,energy,relay_status, int(is_pzem_reset), datetime);        
+        String datetime = nb.getClock().time;
+        payload = get_payload(voltage,energy,relay_status, int(is_pzem_reset), clientID, datetime);        
         nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);  
         lcd.setCursor( 4, 0);              
         lcd.print(total_unit);
