@@ -33,7 +33,8 @@ server.on('message', function(msg, info) {
     var pf = device_payload[6];
     var state = device_payload[7];
     var ip_addr = info.address;
-    var write_msg_payload_str = get_msg_payload_insert_Str(emi_id, voltage, current, power, energy, freq, pf, state, ip_addr);
+    var port = info.port;
+    var write_msg_payload_str = get_msg_payload_insert_Str(emi_id, voltage, current, power, energy, freq, pf, state, ip_addr, port);
     //con.connect(function(err) {
     // if (err) throw err;
     con.query(write_msg_payload_str, function(err, result, fields) {
@@ -87,14 +88,14 @@ server.bind(9766);
 //server.close();
 //},80000);
 
-function get_msg_payload_insert_Str(emi_id, voltage, current, power, energy, freq, pf, state, ip_addr) {
+function get_msg_payload_insert_Str(emi_id, voltage, current, power, energy, freq, pf, state, ip_addr, port) {
     //there are 9 parameters from arduino.
     //emi_id , voltage, current, power, energy, freq, pf, state, ip
     //pf is power factor.
     //state is status of electricity whether on/off    
     var current_time_stamp = get_current_time_stamp()
     console.log('current time: ' + current_time_stamp)
-    var insert_str = "INSERT INTO msg_payload VALUES(\'" + emi_id + "\', " +
+    var insert_str = "INSERT INTO msg_payload_full VALUES(\'" + emi_id + "\', " +
         validate_value(voltage) + "," +
         validate_value(current) + "," +
         validate_value(power) + "," +
@@ -102,7 +103,8 @@ function get_msg_payload_insert_Str(emi_id, voltage, current, power, energy, fre
         validate_value(freq) + "," +
         validate_value(pf) + "," +
         ((state == 'off') ? false : true) + ",\'" +
-        ip_addr + "\', TIMESTAMPADD(HOUR,7,NOW()))";
+        ip_addr + "\'" + ",\'" + port + 
+        "\', TIMESTAMPADD(HOUR,7,NOW()))";
     console.log(insert_str)
     return insert_str;
 }

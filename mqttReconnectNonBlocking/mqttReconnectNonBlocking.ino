@@ -19,10 +19,10 @@ LiquidCrystal_I2C lcd(0x3F, 16, 2);
 const int reboot_uno = 35;
 const int PzemPin = 32;
 const int RelayPin = 15;
-String address    = "125.26.235.193";//"35.185.180.247";               //Your IPaddress or mqtt server url
-String serverPort = "1883";               //Your server port
-String clientID   = "";               //Your client id < 120 characters
-String topic      = "/ESP/";               //Your topic     < 128 characters
+String address    = "lucky.7663handshake.co";//Your IPaddress or mqtt server url
+String serverPort = "1883";          //Your server port
+String clientID   = "";              //Your client id < 120 characters
+String topic      = "/ESP/";         //Your topic     < 128 characters
 String payload    = "";    //Your payload   < 500 characters
 String username   = "inhandlebroker";//"livingthing_iot";               //username for mqtt server, username <= 100 characters
 String password   = "inHandleElectric";//"thegang617";               //password for mqtt server, password <= 100 characters 
@@ -38,8 +38,8 @@ unsigned int pubRetained  = 0;
 unsigned int pubDuplicate = 0;
 //test to change 20210315 10:51
 const long interval = 2000;           //time in millisecond 
-const long restart_interval = 180000UL; //every 3 minutes
-unsigned long previousMillis = 0;
+const long restart_interval = 3600000L; //every 3 minutes
+// unsigned long previousMillis = 0;
 bool is_pzem_reset = false;
 AIS_SIM7020E_API nb;
   /*  This part is for setupAdvanceMQTT.
@@ -53,7 +53,8 @@ int cnt = 0;
 int unavailable_count = 0;
 SoftwareSerial NodeSerial(12, 14); // RX | TX
 String total_unit = "InHandle";
-unsigned long beginMillis= millis();
+long lastReconnectAttempt = 0;
+long startTime = 0; 
 
 void setup() {
  
@@ -68,18 +69,22 @@ void setup() {
   topic = topic + clientID;
   setupMQTT();
   nb.setCallback(callback);
-  previousMillis = millis();
   lcd.begin();
-  
+  startTime = millis();
 }
 
-String added_numeric_payload(String metric_name, float metric_value, bool is_end ){
-  String msg = (metric_value>=0)? "\"" + metric_name + "\":" + String(metric_value) : "";
+String added_decimal_payload(float metric_value, bool is_end ){
+  String msg = String(metric_value);
   return (!is_end)? msg+",": msg;
 }
 
-String added_datetime_payload(String metric_name, String metric_value, bool is_end){
-  String msg = "\"" + metric_name + "\":" + String(metric_value);
+String added_integer_payload(int metric_value, bool is_end ){
+  String msg = String(metric_value);
+  return (!is_end)? msg+",": msg;
+}
+
+String added_string_payload(String metric_value, bool is_end){
+  String msg = String(metric_value);
   return (!is_end)? msg+",": msg;
 }
 
@@ -87,44 +92,42 @@ String get_payload(float voltage,
                    float energy,
                    float relay_status,
                    int is_pzem_reset,
+                   String clientID,
                    String datetime) {
    return "{" + 
-          added_numeric_payload("voltage",voltage, false) +
-          added_numeric_payload("energy", energy,false) +
-          added_numeric_payload("relay_status", relay_status,false) +
-          added_numeric_payload("is_pzem_reset", is_pzem_reset, false) +
-          added_datetime_payload("datetime",datetime,true) +
+          added_decimal_payload(voltage, false) +
+          added_decimal_payload(energy,false) +
+          added_integer_payload(relay_status,false) +
+          added_integer_payload(is_pzem_reset, false) +
+          added_string_payload(clientID,false) +
+          added_string_payload(datetime,true) +
            "}"  ;                                                   
  }
 
 void loop() {
   
-  nb.MQTTresponse();
-  unsigned long currentMillis = millis();    
-  if(currentMillis - beginMillis >= restart_interval){
-    beginMillis = currentMillis;
-    ESP.restart(); 
-  }
-  if(currentMillis - previousMillis >= interval){
-    int note = 0;
+  nb.MQTTresponse();      
+  if(!nb.MQTTstatus()){      
+    long now = millis();
+    if (now - startTime >= restart_interval) {
+        ESP.restart();
+      }
+    if (now - lastReconnectAttempt > 5000) {
+      lastReconnectAttempt = now;
+      // Attempt to reconnect
+      if(!nb.NBstatus()){
+         Serial.println("reconnectNB ");
+         nb.begin();
+      }
+      Serial.println("reconnectMQ ");
+      setupMQTT();
+      lastReconnectAttempt = 0;        
+    }      
+  }else{        
     float voltage = 0.0;
     float energy = 0.0;
     int relay_status = 0;    
-    int node_unreadable_count = 0;
-    // if(NodeSerial.available() > 0){
-    //   Serial.print("NodeSerial is available");
-    // }else{
-    //   Serial.print("NodeSerial is not available");
-    //   unavailable_count++;
-    //   if (unavailable_count>10){       
-    //     connectStatus();
-    //     unavailable_count = 0;
-    //   }
-    //   note = unavailable_count;
-    //   payload = get_payload(voltage,energy,relay_status, cnt, note);        
-    //   nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);
-    // }
-    connectStatus(); 
+    int node_unreadable_count = 0;    
     while (NodeSerial.available() > 0) {   
       voltage = NodeSerial.parseFloat();
       energy = NodeSerial.parseFloat();
@@ -136,21 +139,12 @@ void loop() {
         Serial.print("\tenergy: ");
         Serial.println(energy);
         Serial.print("\trelay_status: ");
-        Serial.println(String(relay_status));        
-        note = 111; //mqtt connect successfully.
-        String datetime = nb.getClock(7).date + "T" +nb.getClock().time;
-        payload = get_payload(voltage,energy,relay_status, int(is_pzem_reset), datetime);        
-        nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);
-
-//QoS = 0, 1, or 2, retained = 0 or 1, dup = 0 or 1        
-//        lcd.setCursor(0, 0);
-//        lcd.print("net:");
-//        lcd.setCursor( 5, 0);      
-        lcd.setCursor( 4, 0);      
-        //please change total_unit here after server code finish
+        Serial.println(String(relay_status));                
+        String datetime = nb.getClock().time;
+        payload = get_payload(voltage,energy,relay_status, int(is_pzem_reset), clientID, datetime);        
+        nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);  
+        lcd.setCursor( 4, 0);              
         lcd.print(total_unit);
-//        lcd.setCursor(12, 0);
-//        lcd.print("unit");
         lcd.setCursor( 0, 1);
         lcd.print("eng:");
         lcd.setCursor( 5, 1);
@@ -169,26 +163,10 @@ void loop() {
             cnt = 0;
             is_pzem_reset = false;
           }
-        }
-        // nb.MQTTresponse();
-      }
-      // else{
-      //   note = -1;
-      //   voltage = 0.0;
-      //   energy = 0.0;
-      //   relay_status = 0;
-      //   node_unreadable_count--;
-      //   if (node_unreadable_count<10){
-      //     connectStatus();
-      //     node_unreadable_count=0;
-      //   }        
-      //   note = node_unreadable_count;
-      //   payload = get_payload(voltage,energy,relay_status, cnt, note);        
-      //   nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);
-      // }
-    }
-    previousMillis = currentMillis;
-  }
+        }        
+      }     
+    }    
+  }  
 }
 
 //=========== MQTT Function ================
@@ -243,10 +221,8 @@ void callback(String &topic,String &callback_payload, String &QoS,String &retain
      case 'd'://reset relay to low
       digitalWrite(RelayPin, LOW);
       break;
-     case 'e'://reset connection
-      //connectStatus();
-      nb.begin();
-      setupMQTT();
+     case 'e'://restart nbiot      
+      ESP.restart();      
       break;     
      default:
      ;     
