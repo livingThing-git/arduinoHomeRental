@@ -8,7 +8,7 @@ class MeasurementMsg:
     voltage: float = 0.0
     power: float = 0.0
     relay_flag: int = 0
-    sth_flag:int = 0
+    restart_flag:int = 0
     device_id: str = ''
     time: str = 0
 
@@ -17,7 +17,7 @@ class MeasurementMsg:
         self.voltage = float(infos[0])
         self.power = float(infos[1]) 
         self.relay_flag = int(infos[2])
-        self.sth_flag = int(infos[3])
+        self.restart_flag = int(infos[3])
         self.device_id = infos[4]
         self.time = infos[5]
 
@@ -26,7 +26,7 @@ class MeasurementMsg:
         print(f'voltage:{self.voltage}')
         print(f'power: {self.power}')
         print(f'relay: {self.relay_flag}')
-        print(f'sth_flag: {self.sth_flag}')
+        print(f'restart_flag: {self.restart_flag}')
         print(f'device_id: {self.device_id}')
         print('=======================================')
         
