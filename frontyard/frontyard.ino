@@ -30,7 +30,11 @@ const char* password = "Xyvxyv99486";
 const char* mqtt_server = "lucky.7663handshake.co";
 String username   = "inhandlebroker";//"livingthing_iot"; 
 String server_password   = "inHandleElectric";//"thegang617";    
-const int relay = 26;
+const int relay1 = 12;
+const int relay2 = 14;
+const int relay3 = 27;
+const int relay4 = 26;
+const int led_status = 13;
 WiFiClient espClient;
 PubSubClient client(espClient);
 unsigned long lastMsg = 0;
@@ -73,11 +77,23 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
   // Switch on the LED if an 1 was received as first character
   if ((char)payload[0] == '1') {
-    digitalWrite(relay, LOW);   // Turn the LED on (Note that LOW is the voltage level
+    digitalWrite(relay1, LOW);   // Turn the LED on (Note that LOW is the voltage level
     // but actually the LED is on; this is because
     // it is active low on the ESP-01)
   } else if ((char)payload[0] == '2'){
-    digitalWrite(relay, HIGH);  // Turn the LED off by making the voltage HIGH  
+    digitalWrite(relay1, HIGH);  // Turn the LED off by making the voltage HIGH  
+  } else if ((char)payload[0] == '3'){
+    digitalWrite(relay2, LOW);  // Turn the LED off by making the voltage HIGH  
+  } else if ((char)payload[0] == '4'){
+    digitalWrite(relay2, HIGH);  // Turn the LED off by making the voltage HIGH  
+  } else if ((char)payload[0] == '5'){
+    digitalWrite(relay3, LOW);  // Turn the LED off by making the voltage HIGH  
+  } else if ((char)payload[0] == '6'){
+    digitalWrite(relay3, HIGH);  // Turn the LED off by making the voltage HIGH  
+  } else if ((char)payload[0] == '7'){
+    digitalWrite(relay4, LOW);  // Turn the LED off by making the voltage HIGH  
+  } else if ((char)payload[0] == '8'){
+    digitalWrite(relay4, HIGH);  // Turn the LED off by making the voltage HIGH  
   } else {
     ;
   }
@@ -85,6 +101,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
 void reconnect() {
   // Loop until we're reconnected
+  
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
     // Create a random client ID
@@ -92,12 +109,14 @@ void reconnect() {
     clientId += String(random(0xffff), HEX);
     // Attempt to connect
     if (client.connect(clientId.c_str(),username.c_str(),server_password.c_str())) {
+      
       Serial.println("connected");
       // Once connected, publish an announcement...
       client.publish("outTopic", "hello world");
       // ... and resubscribe
-      client.subscribe("inTopic");
+      client.subscribe("inTopic");      
     } else {
+      
       Serial.print("failed, rc=");
       Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
@@ -105,10 +124,15 @@ void reconnect() {
       delay(5000);
     }
   }
+        
 }
 
 void setup() {
-  pinMode(relay, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
+  pinMode(relay1, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
+  pinMode(relay2, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
+  pinMode(relay3, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
+  pinMode(relay4, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
+  pinMode(led_status, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
   Serial.begin(115200);
   setup_wifi();
   client.setServer(mqtt_server, 1883);
@@ -118,8 +142,10 @@ void setup() {
 void loop() {
 
   if (!client.connected()) {
+    digitalWrite(led_status, LOW);
     reconnect();
   }
+  digitalWrite(led_status, HIGH);
   client.loop();
 
   unsigned long now = millis();
