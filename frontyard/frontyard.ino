@@ -35,6 +35,12 @@ const int relay2 = 14;
 const int relay3 = 27;
 const int relay4 = 26;
 const int led_status = 13;
+
+bool relay1_status = false;
+bool relay2_status = false;
+bool relay3_status = false;
+bool relay4_status = false;
+
 WiFiClient espClient;
 PubSubClient client(espClient);
 unsigned long lastMsg = 0;
@@ -78,22 +84,30 @@ void callback(char* topic, byte* payload, unsigned int length) {
   // Switch on the LED if an 1 was received as first character
   if ((char)payload[0] == '1') {
     digitalWrite(relay1, LOW);   // Turn the LED on (Note that LOW is the voltage level
+    relay1_status = false;
     // but actually the LED is on; this is because
     // it is active low on the ESP-01)
   } else if ((char)payload[0] == '2'){
     digitalWrite(relay1, HIGH);  // Turn the LED off by making the voltage HIGH  
+    relay1_status = true;
   } else if ((char)payload[0] == '3'){
     digitalWrite(relay2, LOW);  // Turn the LED off by making the voltage HIGH  
+    relay2_status = false;
   } else if ((char)payload[0] == '4'){
     digitalWrite(relay2, HIGH);  // Turn the LED off by making the voltage HIGH  
+    relay2_status = true;
   } else if ((char)payload[0] == '5'){
     digitalWrite(relay3, LOW);  // Turn the LED off by making the voltage HIGH  
+    relay3_status = false;
   } else if ((char)payload[0] == '6'){
     digitalWrite(relay3, HIGH);  // Turn the LED off by making the voltage HIGH  
+    relay3_status = true;
   } else if ((char)payload[0] == '7'){
     digitalWrite(relay4, LOW);  // Turn the LED off by making the voltage HIGH  
+    relay4_status = false;
   } else if ((char)payload[0] == '8'){
     digitalWrite(relay4, HIGH);  // Turn the LED off by making the voltage HIGH  
+    relay4_status = true;
   } else {
     ;
   }
@@ -112,7 +126,8 @@ void reconnect() {
       
       Serial.println("connected");
       // Once connected, publish an announcement...
-      client.publish("outTopic", "hello world");
+      
+      client.publish("outTopic", "hello");
       // ... and resubscribe
       client.subscribe("inTopic");      
     } else {
@@ -152,7 +167,41 @@ void loop() {
   if (now - lastMsg > 2000) {
     lastMsg = now;
     ++value;
-    snprintf (msg, MSG_BUFFER_SIZE, "hello world #%ld", value);
+    String out_message = "";
+      if (relay1_status && relay2_status && relay3_status && relay4_status){
+        out_message = "1,1,1,1";
+      }else if(!relay1_status && relay2_status && relay3_status && relay4_status){
+        out_message = "0,1,1,1";
+      }else if(relay1_status && !relay2_status && relay3_status && relay4_status){
+        out_message = "1,0,1,1";
+      }else if(relay1_status && relay2_status && !relay3_status && relay4_status){
+        out_message = "1,1,0,1";
+      }else if(relay1_status && relay2_status && relay3_status && !relay4_status){
+        out_message = "1,1,1,0";
+      }else if(!relay1_status && !relay2_status && relay3_status && relay4_status){
+        out_message = "0,0,1,1";
+      }else if(!relay1_status && relay2_status && !relay3_status && relay4_status){
+        out_message = "0,1,0,1";
+      }else if(!relay1_status && relay2_status && relay3_status && !relay4_status){
+        out_message = "0,1,1,0";
+      }else if(relay1_status && !relay2_status && !relay3_status && relay4_status){
+        out_message = "1,0,0,1";
+      }else if(relay1_status && !relay2_status && relay3_status && !relay4_status){
+        out_message = "1,0,1,0";
+      }else if(relay1_status && relay2_status && !relay3_status && !relay4_status){
+        out_message = "1,1,0,0";
+      }else if(!relay1_status && !relay2_status && !relay3_status && relay4_status){
+        out_message = "0,0,0,1";
+      }else if(!relay1_status && relay2_status && !relay3_status && !relay4_status){
+        out_message = "0,1,0,0";
+      }else if(relay1_status && !relay2_status && !relay3_status && !relay4_status){
+        out_message = "1,0,0,0";
+      }else if(!relay1_status && !relay2_status && relay3_status && !relay4_status){
+        out_message = "0,0,1,0";
+      }else {
+        out_message = "0,0,0,0";
+      }
+    snprintf (msg, MSG_BUFFER_SIZE, "%s", out_message.c_str());
     Serial.print("Publish message: ");
     Serial.println(msg);
     client.publish("outTopic", msg);
