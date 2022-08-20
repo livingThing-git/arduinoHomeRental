@@ -49,6 +49,7 @@ bool relay2_status = false;
 bool relay3_status = false;
 bool relay4_status = false;
 
+
 void setup() {
     pinMode(relay1, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
     pinMode(relay2, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
@@ -144,41 +145,47 @@ void connectStatus(){
 void callback(String &topic,String &payload, String &QoS,String &retained){
   Serial.println("-------------------------------");
   Serial.println("# Message from Topic \""+topic+"\" : "+nb.toString(payload));
+  String payload_input=nb.toString(payload);
+  int cmd_char=payload_input.toInt();
+  
+  // Switch on the LED if an 1 was received as first character
+  if(payload_input.length()==1){
+    if (cmd_char==1) {
+      digitalWrite(relay1, LOW);   // Turn the LED on (Note that LOW is the voltage level
+      relay1_status = false;
+      // but actually the LED is on; this is because
+      // it is active low on the ESP-01)
+    } else if (cmd_char==2){
+      digitalWrite(relay1, HIGH);  // Turn the LED off by making the voltage HIGH  
+      relay1_status = true;
+    } else if (cmd_char==3){
+      digitalWrite(relay2, LOW);  // Turn the LED off by making the voltage HIGH  
+      relay2_status = false;
+    } else if (cmd_char==4){
+      digitalWrite(relay2, HIGH);  // Turn the LED off by making the voltage HIGH  
+      relay2_status = true;
+    } else if (cmd_char==5){
+      digitalWrite(relay3, LOW);  // Turn the LED off by making the voltage HIGH  
+      relay3_status = false;
+    } else if (cmd_char==6){
+      digitalWrite(relay3, HIGH);  // Turn the LED off by making the voltage HIGH  
+      relay3_status = true;
+    } else if (cmd_char==7){
+      digitalWrite(relay4, LOW);  // Turn the LED off by making the voltage HIGH  
+      relay4_status = false;
+    } else if (cmd_char==8){
+      digitalWrite(relay4, HIGH);  // Turn the LED off by making the voltage HIGH  
+      relay4_status = true;
+    } else {
+      ;
+    }
+  }else {
+    ;
+  }
+
   Serial.println("# QoS = "+QoS);
   if(retained.indexOf(F("1"))!=-1){
     Serial.println("# Retained = "+retained);
   }
-  String payload_input=nb.toString(payload);
-  char cmd_char=payload_input[0];
   
-  // Switch on the LED if an 1 was received as first character
-  if (cmd_char==('1')) {
-    digitalWrite(relay1, LOW);   // Turn the LED on (Note that LOW is the voltage level
-    relay1_status = false;
-    // but actually the LED is on; this is because
-    // it is active low on the ESP-01)
-  } else if (cmd_char==('2')){
-    digitalWrite(relay1, HIGH);  // Turn the LED off by making the voltage HIGH  
-    relay1_status = true;
-  } else if (cmd_char==('3')){
-    digitalWrite(relay2, LOW);  // Turn the LED off by making the voltage HIGH  
-    relay2_status = false;
-  } else if (cmd_char==('4')){
-    digitalWrite(relay2, HIGH);  // Turn the LED off by making the voltage HIGH  
-    relay2_status = true;
-  } else if (cmd_char==('5')){
-    digitalWrite(relay3, LOW);  // Turn the LED off by making the voltage HIGH  
-    relay3_status = false;
-  } else if (cmd_char==('6')){
-    digitalWrite(relay3, HIGH);  // Turn the LED off by making the voltage HIGH  
-    relay3_status = true;
-  } else if (cmd_char==('7')){
-    digitalWrite(relay4, LOW);  // Turn the LED off by making the voltage HIGH  
-    relay4_status = false;
-  } else if (cmd_char==('8')){
-    digitalWrite(relay4, HIGH);  // Turn the LED off by making the voltage HIGH  
-    relay4_status = true;
-  } else {
-    ;
-  }
 }
