@@ -129,11 +129,13 @@ void setupMQTT(){
 }
 
 void connectStatus(){
-    if(!nb.MQTTstatus()){
+    if(!nb.MQTTstatus()){        
         if(!nb.NBstatus()){
+            digitalWrite(led_status, LOW);
            Serial.println("reconnectNB ");
-           nb.begin();
+           nb.begin();           
         }
+        digitalWrite(led_status, HIGH);
        Serial.println("reconnectMQ ");
        setupMQTT();
     }   
