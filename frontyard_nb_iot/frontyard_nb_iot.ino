@@ -66,10 +66,10 @@ void setup() {
 
 String get_out_message(bool relay1_status, bool relay2_status, bool relay3_status, bool relay4_status){
     String out_message = "";
-        if (relay1_status && relay2_status && relay3_status && relay4_status){
-            out_message = "1,1,1,1";
-        }else if(!relay1_status && relay2_status && relay3_status && relay4_status){
+        if (!relay1_status && relay2_status && relay3_status && relay4_status){
             out_message = "0,1,1,1";
+        }else if(relay1_status && relay2_status && relay3_status && relay4_status){
+            out_message = "1,1,1,1";
         }else if(relay1_status && !relay2_status && relay3_status && relay4_status){
             out_message = "1,0,1,1";
         }else if(relay1_status && relay2_status && !relay3_status && relay4_status){
@@ -134,11 +134,11 @@ void connectStatus(){
             digitalWrite(led_status, LOW);
            Serial.println("reconnectNB ");
            nb.begin();           
-        }
-        digitalWrite(led_status, HIGH);
+        }        
        Serial.println("reconnectMQ ");
        setupMQTT();
     }   
+    digitalWrite(led_status, HIGH);
 }
 
 void callback(String &topic,String &payload, String &QoS,String &retained){
@@ -150,15 +150,7 @@ void callback(String &topic,String &payload, String &QoS,String &retained){
   }
   String payload_input=nb.toString(payload);
   char cmd_char=payload_input[0];
-  Serial.print("current payload ");
-  Serial.print(cmd_char);
-  Serial.println("");
-  bool test_code=false;
-  test_code=(cmd_char=='1');
-  // Serial.println("compare result " + ((test_code)? "True".to_str(): "False".to_str()));
-  Serial.print("compare result ");
-  Serial.print(test_code,DEC);
-  Serial.println("");
+  
   // Switch on the LED if an 1 was received as first character
   if (cmd_char==('1')) {
     digitalWrite(relay1, LOW);   // Turn the LED on (Note that LOW is the voltage level
