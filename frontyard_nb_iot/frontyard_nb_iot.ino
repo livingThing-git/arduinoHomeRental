@@ -38,7 +38,7 @@ AIS_SIM7020E_API nb;
    *  will_msg   : String */
 String willOption = nb.willConfig("will_topic",will_qos,will_retain,"will_msg");
 int cnt = 0;
-const int relay1 = 1;
+const int relay1 = 12;
 const int relay2 = 14;
 const int relay3 = 33;
 const int relay4 = 32;
