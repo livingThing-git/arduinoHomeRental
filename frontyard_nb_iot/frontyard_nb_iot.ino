@@ -57,6 +57,8 @@ void setup() {
     pinMode(led_status, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
     Serial.begin(115200);
     nb.begin();
+    clientID = nb.getIMSI();
+    topic = topic + clientID;
     setupMQTT();
     nb.setCallback(callback); 
     previousMillis = millis();                
