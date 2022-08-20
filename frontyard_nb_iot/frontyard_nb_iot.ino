@@ -40,8 +40,8 @@ String willOption = nb.willConfig("will_topic",will_qos,will_retain,"will_msg");
 int cnt = 0;
 const int relay1 = 1;
 const int relay2 = 14;
-const int relay3 = 27;
-const int relay4 = 26;
+const int relay3 = 33;
+const int relay4 = 32;
 const int led_status = 13;
 
 bool relay1_status = false;
@@ -109,7 +109,7 @@ void loop() {
         cnt++;
         connectStatus();
         payload=get_out_message(relay1_status, relay2_status, relay3_status, relay4_status);
-        nb.publish(topic, payload+String(cnt), pubQoS, pubRetained, pubDuplicate);      //QoS = 0, 1, or 2, retained = 0 or 1, dup = 0 or 1
+        nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);      //QoS = 0, 1, or 2, retained = 0 or 1, dup = 0 or 1
         previousMillis = currentMillis;  
   }
 }
@@ -146,32 +146,42 @@ void callback(String &topic,String &payload, String &QoS,String &retained){
   if(retained.indexOf(F("1"))!=-1){
     Serial.println("# Retained = "+retained);
   }
-
+  String payload_input=nb.toString(payload);
+  char cmd_char=payload_input[0];
+  Serial.print("current payload ");
+  Serial.print(cmd_char);
+  Serial.println("");
+  bool test_code=false;
+  test_code=(cmd_char=='1');
+  // Serial.println("compare result " + ((test_code)? "True".to_str(): "False".to_str()));
+  Serial.print("compare result ");
+  Serial.print(test_code,DEC);
+  Serial.println("");
   // Switch on the LED if an 1 was received as first character
-  if (payload.equals( "1")) {
+  if (cmd_char==('1')) {
     digitalWrite(relay1, LOW);   // Turn the LED on (Note that LOW is the voltage level
     relay1_status = false;
     // but actually the LED is on; this is because
     // it is active low on the ESP-01)
-  } else if (payload.equals("2")){
+  } else if (cmd_char==('2')){
     digitalWrite(relay1, HIGH);  // Turn the LED off by making the voltage HIGH  
     relay1_status = true;
-  } else if (payload.equals("3")){
+  } else if (cmd_char==('3')){
     digitalWrite(relay2, LOW);  // Turn the LED off by making the voltage HIGH  
     relay2_status = false;
-  } else if (payload.equals("4")){
+  } else if (cmd_char==('4')){
     digitalWrite(relay2, HIGH);  // Turn the LED off by making the voltage HIGH  
     relay2_status = true;
-  } else if (payload.equals("5")){
+  } else if (cmd_char==('5')){
     digitalWrite(relay3, LOW);  // Turn the LED off by making the voltage HIGH  
     relay3_status = false;
-  } else if (payload.equals("6")){
+  } else if (cmd_char==('6')){
     digitalWrite(relay3, HIGH);  // Turn the LED off by making the voltage HIGH  
     relay3_status = true;
-  } else if (payload.equals("7")){
+  } else if (cmd_char==('7')){
     digitalWrite(relay4, LOW);  // Turn the LED off by making the voltage HIGH  
     relay4_status = false;
-  } else if (payload.equals("8")){
+  } else if (cmd_char==('8')){
     digitalWrite(relay4, HIGH);  // Turn the LED off by making the voltage HIGH  
     relay4_status = true;
   } else {

@@ -1,6 +1,10 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <SoftwareSerial.h>
+
+
+// permission denied:sudo chmod a+rw /dev/ttyUSB0
+
 /*
  Supported DEVIO NB-DEVKIT I Board 
     |  Do not use PIN   |
@@ -16,7 +20,7 @@
 // Set the LCD address to 0x3F for a 16 chars and 2 line display
 LiquidCrystal_I2C lcd(0x3F, 16, 2);
 
-const int reboot_uno = 35;
+const int reboot_uno = 13;
 const int PzemPin = 32;
 const int RelayPin = 15;
 String address    = "lucky.7663handshake.co";//Your IPaddress or mqtt server url
@@ -62,6 +66,8 @@ void setup() {
   pinMode(14, OUTPUT);
   pinMode(PzemPin, OUTPUT);
   pinMode(RelayPin, OUTPUT);
+  // reboot_uno
+  pinMode(reboot_uno, OUTPUT);
   Serial.begin(115200);
   NodeSerial.begin(57600);
   nb.begin();
@@ -223,7 +229,13 @@ void callback(String &topic,String &callback_payload, String &QoS,String &retain
       break;
      case 'e'://restart nbiot      
       ESP.restart();      
-      break;     
+      break;
+     case 'f'://uno turn on
+      digitalWrite(reboot_uno,LOW);
+      break;
+     case 'g'://uno turn off
+      digitalWrite(reboot_uno,HIGH);
+      break;
      default:
      ;     
   }
