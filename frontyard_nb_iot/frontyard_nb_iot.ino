@@ -148,7 +148,11 @@ void callback(String &topic,String &payload, String &QoS,String &retained){
   Serial.println("-------------------------------");
   Serial.println("# Message from Topic \""+topic+"\" : "+nb.toString(payload));
   String payload_input=nb.toString(payload);
-  int cmd_char=payload_input.toInt();
+  int cmd_char=0;
+  if(topic==sub_topic){
+    Serial.println("Topic from listen");
+    cmd_char=payload_input.toInt();
+  }
   
   // Switch on the LED if an 1 was received as first character
   if(payload_input.length()==1){
