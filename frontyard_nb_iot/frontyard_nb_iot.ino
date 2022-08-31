@@ -12,6 +12,7 @@ String address    = "lucky.7663handshake.co";               //Your IPaddress or 
 String serverPort = "1883";               //Your server port
 String clientID   = "";               //Your client id < 120 characters
 String topic      = "/ESP/";               //Your topic     < 128 characters
+String sub_topic  = "";
 String payload    = "HelloWorld!";    //Your payload   < 500 characters
 String username   = "inhandlebroker";               //username for mqtt server, username <= 100 characters
 String password   = "inHandleElectric";               //password for mqtt server, password <= 100 characters 
@@ -60,6 +61,7 @@ void setup() {
     nb.begin();
     clientID = nb.getIMSI();
     topic = topic + clientID;
+    sub_topic=sub_topic+topic+"/listen"
     setupMQTT();
     nb.setCallback(callback); 
     previousMillis = millis();                
@@ -125,7 +127,7 @@ void setupMQTT(){
    if(!nb.connectAdvanceMQTT(address,serverPort,clientID,username,password,keepalive,version,cleansession,willflag,willOption)){
      Serial.println("\nconnectMQTT");
     }
-    nb.subscribe(topic,subQoS);
+    nb.subscribe(sub_topic,subQoS);
 //    nb.unsubscribe(topic); 
 }
 
