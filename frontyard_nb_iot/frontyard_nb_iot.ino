@@ -61,7 +61,7 @@ void setup() {
     nb.begin();
     clientID = nb.getIMSI();
     topic = topic + clientID;
-    sub_topic=sub_topic+topic+"/listen"
+    sub_topic=sub_topic+topic+"/listen";
     setupMQTT();
     nb.setCallback(callback); 
     previousMillis = millis();                
