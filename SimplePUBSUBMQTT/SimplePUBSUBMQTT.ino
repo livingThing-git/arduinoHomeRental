@@ -59,7 +59,7 @@ void loop() {
   if (currentMillis - previousMillis >= interval) {
         cnt++;
         connectStatus();
-        String show_payload=payload + ((relay1_status) " on": " off");
+        String show_payload=payload + ((relay1_status)? " on": " off");
         nb.publish(topic,show_payload);   
         control_relay(relay1);
 //      nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);      //QoS = 0, 1, or 2, retained = 0 or 1, dup = 0 or 1
