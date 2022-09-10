@@ -41,7 +41,7 @@ void loop() {
   if (currentMillis - previousMillis >= interval) {
         cnt++;
         connectStatus();
-        nb.publish(topic,payload+String(cnt));      
+        nb.publish(topic,payload+":"+String(cnt));      
 //      nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);      //QoS = 0, 1, or 2, retained = 0 or 1, dup = 0 or 1
         previousMillis = currentMillis;  
   }
