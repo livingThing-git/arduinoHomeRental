@@ -12,6 +12,7 @@ if __name__=="__main__":
     user="inhandlebroker"
     pwd_flag="-P"
     pwd="inHandleElectric"
+    cnt=0
     while True:        
         time.sleep(10)
         if cnt%2==1:
