@@ -12,7 +12,7 @@ if __name__=="__main__":
     user="inhandlebroker"
     pwd_flag="-P"
     pwd="inHandleElectric"
-    while true:        
+    while True:        
         time.sleep(10)
         if cnt%2==1:
             message="a"        
