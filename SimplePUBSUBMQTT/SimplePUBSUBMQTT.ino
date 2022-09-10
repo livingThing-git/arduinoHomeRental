@@ -8,13 +8,13 @@
     |     27 reset      |
 */
 #include "AIS_SIM7020E_API.h"
-String address    = "35.240.140.227";               //Your IPaddress or mqtt server url
+String address    = "lucky.7663handshake.co";               //Your IPaddress or mqtt server url
 String serverPort = "1883";               //Your server port
 String clientID   = "";               //Your client id < 120 characters
 String topic      = "/ESP/";               //Your topic     < 128 characters
 String payload    = "HelloWorld!";    //Your payload   < 500 characters
-String username   = "";               //username for mqtt server, username <= 100 characters
-String password   = "";               //password for mqtt server, password <= 100 characters 
+String username   = "inhandlebroker";               //username for mqtt server, username <= 100 characters
+String password   = "inHandleElectric";               //password for mqtt server, password <= 100 characters 
 unsigned int subQoS       = 0;
 unsigned int pubQoS       = 0;
 unsigned int pubRetained  = 0;
@@ -26,11 +26,11 @@ int cnt = 0;
 
 AIS_SIM7020E_API nb;
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(115200);  
+  nb.begin();
   clientID = clientID + nb.getIMSI();
   topic = topic + clientID;
   payload = payload + clientID;
-  nb.begin();
   setupMQTT();
   nb.setCallback(callback);   
   previousMillis = millis();            
