@@ -1,5 +1,6 @@
 import subprocess
 import time
+from datetime import datetime
 
 if __name__=="__main__":
     command_to_use="mosquitto_pub"
@@ -19,5 +20,6 @@ if __name__=="__main__":
             message="a"        
         else:
             message="1"        
+        print(f"{datetime.now()}: {'on' if message==1 else 'off'}")        
         subprocess.call([command_to_use,host_flag,server_name,message_flag,message,topic_flag,topic,user_flag,user,pwd_flag,pwd])
         cnt=cnt + 1
