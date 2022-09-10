@@ -2,7 +2,7 @@ import subprocess
 import time
 
 if __name__=="__main__":
-    command_to_use="mosquitto_sub"
+    command_to_use="mosquitto_pub"
     host_flag="-h"
     server_name="lucky.7663handshake.co"
     message_flag="-m"    
