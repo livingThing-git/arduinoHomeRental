@@ -11,7 +11,7 @@
 String address    = "lucky.7663handshake.co";               //Your IPaddress or mqtt server url
 String serverPort = "1883";               //Your server port
 String clientID   = "";               //Your client id < 120 characters
-String topic      = "/ESP/";               //Your topic     < 128 characters
+String topic      = "/esp/";               //Your topic     < 128 characters
 String sub_topic  = "";
 String payload    = "HelloWorld!";    //Your payload   < 500 characters
 String username   = "inhandlebroker";               //username for mqtt server, username <= 100 characters
@@ -44,6 +44,9 @@ const int relay2 = 14;
 const int relay3 = 33;
 const int relay4 = 32;
 const int led_status = 13;
+const int pub_status = 2;
+const int sub_status = 4;
+
 
 bool relay1_status = false;
 bool relay2_status = false;
@@ -57,6 +60,8 @@ void setup() {
     pinMode(relay3, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
     pinMode(relay4, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
     pinMode(led_status, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
+    pinMode(pub_status, OUTPUT);
+    pinMode(sub_status, OUTPUT);
     Serial.begin(115200);
     nb.begin();
     clientID = nb.getIMSI();
@@ -113,8 +118,13 @@ void loop() {
         connectStatus();        
         payload=get_out_message(relay1_status, relay2_status, relay3_status, relay4_status);
         nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);      //QoS = 0, 1, or 2, retained = 0 or 1, dup = 0 or 1
-        previousMillis = currentMillis;  
+        //digitalWrite(pub_status, HIGH);
+        previousMillis = currentMillis; 
+        digitalWrite(pub_status, LOW); 
   } 
+  else {
+        digitalWrite(pub_status, HIGH);
+      }
 }
 
 //=========== MQTT Function ================
@@ -128,6 +138,7 @@ void setupMQTT(){
      Serial.println("\nconnectMQTT");
     }
     nb.subscribe(sub_topic,subQoS);
+  //  digitalWrite(sub_status, HIGH);
 //    nb.unsubscribe(topic); 
 }
 
@@ -142,6 +153,7 @@ void connectStatus(){
        setupMQTT();
     }   
     digitalWrite(led_status, HIGH);
+
 }
 
 void callback(String &topic,String &payload, String &QoS,String &retained){
