@@ -126,7 +126,7 @@ void loop() {
         }
         connectStatus();        
         payload=get_out_message(relay1_status, relay2_status, relay3_status, relay4_status);
-        nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);      //QoS = 0, 1, or 2, retained = 0 or 1, dup = 0 or 1        
+        nb.publish(topic, (payload + ":" + str(cnt)), pubQoS, pubRetained, pubDuplicate);      //QoS = 0, 1, or 2, retained = 0 or 1, dup = 0 or 1        
         previousMillis = currentMillis;              
   } 
   
