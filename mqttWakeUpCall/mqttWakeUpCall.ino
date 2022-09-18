@@ -45,6 +45,7 @@ const int relay1 = 12;
 const int relay2 = 14;
 const int relay3 = 33;
 const int relay4 = 32;
+const int wake_up_pin= 15;
 const int led_status = 13;
 const int pub_status = 2;
 const int sub_status = 4;
@@ -64,6 +65,7 @@ void setup() {
     pinMode(led_status, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
     pinMode(pub_status, OUTPUT);
     pinMode(sub_status, OUTPUT);
+    pinMode(wake_up_pin, OUTPUT);   // Initialize the wake_up_pin as an output
     Serial.begin(115200);
     nb.begin();
     clientID = nb.getIMSI();
@@ -116,17 +118,18 @@ void loop() {
   nb.MQTTresponse();
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= interval) {
-        // cnt++;
+        cnt++;
+        if (cnt%2==0){
+          digitalWrite(wake_up_pin, HIGH);
+        } else {
+          digitalWrite(wake_up_pin, LOW);
+        }
         connectStatus();        
         payload=get_out_message(relay1_status, relay2_status, relay3_status, relay4_status);
-        nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);      //QoS = 0, 1, or 2, retained = 0 or 1, dup = 0 or 1
-        //digitalWrite(pub_status, HIGH);
-        previousMillis = currentMillis; 
-        digitalWrite(pub_status, LOW); 
+        nb.publish(topic, payload, pubQoS, pubRetained, pubDuplicate);      //QoS = 0, 1, or 2, retained = 0 or 1, dup = 0 or 1        
+        previousMillis = currentMillis;              
   } 
-  else {
-        digitalWrite(pub_status, HIGH);
-      }
+  
 }
 
 //=========== MQTT Function ================
