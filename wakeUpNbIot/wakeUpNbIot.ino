@@ -2,6 +2,7 @@
 
 const int live_signal_pin = 2;
 const int wake_up_pin = 13;
+const int led_pin = 8;
 int unchange_cnt=0;
 
 bool current_state=false;
@@ -22,6 +23,7 @@ void loop() {
 
 void live_signal_check() {
   // put your main code here, to run repeatedly:  
+  digitalWrite(led_pin,HIGH);
   delay(1000);  
   if(digitalRead(live_signal_pin)==HIGH)
     current_state=true;
@@ -40,4 +42,5 @@ void live_signal_check() {
   } else if (unchange_cnt<10) {
     digitalWrite(wake_up_pin, LOW);
   }
+  digitalWrite(led_pin,LOW);
 }
