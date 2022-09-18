@@ -6,13 +6,14 @@ int unchange_cnt=0;
 
 bool current_state=false;
 bool prev_state=false;
+Schedular Task1; // สร้างงาน Task
 
 void setup() {
   // put your setup code here, to run once:
   pinMode(live_signal_pin, INPUT);
   pinMode(wake_up_pin, OUTPUT);
   Serial.begin(115200);
-  Schedular Task1; // สร้างงาน Task
+  Task1.start();
 }
 
 void loop() {
