@@ -1,7 +1,7 @@
 #include <EasyScheduler.h>
 
 const int live_signal_pin = 2;
-const int wake_up_pin = 13;
+const int wake_up_pin = 12;
 const int led_pin = 8;
 int unchange_cnt=0;
 
@@ -37,9 +37,12 @@ void live_signal_check() {
     unchange_cnt++;
   }
 
-  if (unchange_cnt>10) {
+  if (unchange_cnt>30) {
     digitalWrite(wake_up_pin, HIGH);
-  } else if (unchange_cnt<10) {
+   delay(5000); 
+   digitalWrite(wake_up_pin, LOW);
+   delay(20000);
+  } else if (unchange_cnt<30) {
     digitalWrite(wake_up_pin, LOW);
   }
   digitalWrite(led_pin,LOW);

@@ -30,7 +30,8 @@ unsigned int pubRetained  = 0;
 unsigned int pubDuplicate = 0;
 
 const long interval = 2000;           //time in millisecond 
-unsigned long previousMillis = 3600000L;
+//unsigned long previousMillis = 3600000L;
+unsigned long previousMillis = 0;
 
 AIS_SIM7020E_API nb;
   /*  This part is for setupAdvanceMQTT.
